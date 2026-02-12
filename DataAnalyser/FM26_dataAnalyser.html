@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FM26 Scout Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root, [data-theme="dark"] {
+            --bg-primary: #0d1117; --bg-card: #161b22; --bg-hover: #1c2333;
+            --bg-thead: #1c2128; --border-row: #21262d; --bg-selected: #1a2332;
+            --border: #30363d; --text-primary: #e6edf3; --text-secondary: #8b949e;
+            --accent: #58a6ff; --accent-hover: #79b8ff;
+            --score-elite: #ffd700; --score-excellent: #22c55e; --score-vgood: #86efac;
+            --score-good: #a3e635; --score-avg: #eab308; --score-bavg: #f97316;
+            --score-poor: #ea580c; --score-vpoor: #ef4444;
+            --shadow: rgba(0,0,0,.5); --badge-alpha: 0.13;
+        }
+        [data-theme="light"] {
+            --bg-primary: #f6f8fa; --bg-card: #ffffff; --bg-hover: #f0f2f5;
+            --bg-thead: #f6f8fa; --border-row: #d8dee4; --bg-selected: #ddf4ff;
+            --border: #d0d7de; --text-primary: #1f2328; --text-secondary: #656d76;
+            --accent: #0969da; --accent-hover: #0550ae;
+            --score-elite: #b8860b; --score-excellent: #1a7f37; --score-vgood: #2da44e;
+            --score-good: #4d7c0f; --score-avg: #9a6700; --score-bavg: #bc4c00;
+            --score-poor: #cf222e; --score-vpoor: #a40e26;
+            --shadow: rgba(0,0,0,.12); --badge-alpha: 0.10;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+        header { padding: 20px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; }
+        header h1 { font-size: 22px; font-weight: 700; }
+        header h1 i { color: var(--accent); margin-right: 8px; }
+        header .subtitle { color: var(--text-secondary); font-size: 13px; }
+
+        .container { max-width: 1600px; margin: 0 auto; padding: 24px 32px; }
+
+        /* Upload Zone */
+        .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 48px; text-align: center;
+            cursor: pointer; transition: all .2s; background: var(--bg-card); margin-bottom: 24px; }
+        .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: var(--bg-hover); }
+        .upload-zone i { font-size: 48px; color: var(--accent); margin-bottom: 16px; }
+        .upload-zone p { color: var(--text-secondary); margin-top: 8px; }
+        .upload-zone.loaded { padding: 12px 24px; display: flex; align-items: center; gap: 12px; }
+        .upload-zone.loaded i { font-size: 18px; margin-bottom: 0; }
+        .upload-zone.loaded p { margin-top: 0; }
+        #fileInput { display: none; }
+
+        /* Summary Cards */
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+        .summary-card .label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; }
+        .summary-card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+        .summary-card .value.accent { color: var(--accent); }
+
+        /* Filters */
+        .filters { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center; }
+        .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .filter-group label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; }
+        .filter-group input, .filter-group select {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);
+            padding: 7px 12px; font-size: 13px; font-family: inherit; min-width: 140px; outline: none; }
+        .filter-group input:focus, .filter-group select:focus { border-color: var(--accent); }
+        .filter-group input::placeholder { color: var(--text-secondary); }
+        .filter-group select option { background: var(--bg-card); color: var(--text-primary); }
+
+        /* Profile Tabs */
+        .profile-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+        .profile-tab { padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer;
+            border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); transition: all .15s; }
+        .profile-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .profile-tab.active { background: var(--accent); color: #0d1117; border-color: var(--accent); font-weight: 600; }
+        .profile-tab .count { font-size: 11px; opacity: .7; margin-left: 4px; }
+
+        /* Style sub-tabs */
+        .style-tabs { display: flex; gap: 4px; margin: -12px 0 16px 0; flex-wrap: wrap; }
+        .style-tab { padding: 4px 12px; border-radius: 14px; font-size: 12px; cursor: pointer;
+            border: 1px solid var(--border); background: transparent; color: var(--text-secondary); transition: all .15s; }
+        .style-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .style-tab.active { background: rgba(88,166,255,0.15); color: var(--accent); border-color: var(--accent); font-weight: 600; }
+        [data-theme="light"] .style-tab.active { background: rgba(9,105,218,0.1); }
+
+        /* Table */
+        .table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        thead th { position: sticky; top: 0; background: var(--bg-thead); padding: 10px 12px; text-align: left; font-weight: 600;
+            font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-secondary);
+            border-bottom: 1px solid var(--border); cursor: pointer; white-space: nowrap; user-select: none; }
+        thead th:hover { color: var(--text-primary); }
+        thead th .sort-icon { margin-left: 4px; font-size: 10px; }
+        tbody tr { border-bottom: 1px solid var(--border-row); cursor: pointer; transition: background .1s; }
+        tbody tr:hover { background: var(--bg-hover); }
+        tbody tr.selected { background: var(--bg-selected); }
+        td { padding: 8px 12px; white-space: nowrap; }
+        td.name-cell { font-weight: 600; min-width: 160px; }
+        td.pos-cell { color: var(--text-secondary); font-size: 12px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Score Badge */
+        .score-badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-weight: 700; font-size: 13px;
+            min-width: 42px; text-align: center; }
+        .score-badge.small { font-size: 11px; padding: 1px 6px; min-width: 32px; }
+
+        /* Pagination */
+        .pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px;
+            border-top: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); }
+        .pagination-buttons { display: flex; gap: 4px; }
+        .pagination-buttons button { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+            color: var(--text-primary); padding: 5px 12px; cursor: pointer; font-size: 13px; font-family: inherit; }
+        .pagination-buttons button:hover:not(:disabled) { border-color: var(--accent); }
+        .pagination-buttons button:disabled { opacity: .4; cursor: default; }
+        .pagination-buttons button.active { background: var(--accent); color: #0d1117; border-color: var(--accent); }
+
+        /* Detail Panel */
+        .detail-overlay { position: fixed; top: 0; right: 0; width: 480px; height: 100vh; background: var(--bg-card);
+            border-left: 1px solid var(--border); transform: translateX(100%); transition: transform .25s ease;
+            z-index: 100; overflow-y: auto; box-shadow: -8px 0 32px var(--shadow); }
+        .detail-overlay.open { transform: translateX(0); }
+        .detail-header { padding: 14px 20px; border-bottom: 1px solid var(--border); }
+        .detail-header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .detail-header .close-btn { background: none; border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; padding: 2px; }
+        .detail-header .close-btn:hover { color: var(--text-primary); }
+        .detail-player-name { font-size: 18px; font-weight: 700; }
+        .detail-meta { color: var(--text-secondary); font-size: 12px; margin-top: 2px; }
+        .detail-scores { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+        .detail-score-card { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px;
+            padding: 3px 7px; text-align: center; cursor: pointer; transition: border-color .15s;
+            display: flex; align-items: center; gap: 4px; }
+        .detail-score-card:hover, .detail-score-card.active { border-color: var(--accent); }
+        .detail-score-card .profile-label { font-size: 9px; color: var(--text-secondary); max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .detail-score-card .profile-score { font-size: 14px; font-weight: 700; }
+        .detail-score-group { display: flex; align-items: center; gap: 3px; }
+        .detail-score-group-label { font-size: 10px; font-weight: 700; color: var(--accent); min-width: 22px; }
+        .detail-score-group-items { display: flex; gap: 3px; flex-wrap: wrap; }
+        .detail-section { padding: 14px 20px; border-bottom: 1px solid var(--border); }
+        .detail-section h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-secondary); margin-bottom: 8px; }
+        .radar-container { width: 100%; max-width: 340px; margin: 0 auto; }
+        .detail-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 16px; }
+        .detail-stat-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid var(--border-row); }
+        .detail-stat-row .stat-name { color: var(--text-secondary); font-size: 11px; }
+        .detail-stat-row .stat-value { font-weight: 600; font-size: 11px; }
+        .detail-info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+        .detail-info-item .info-label { font-size: 10px; color: var(--text-secondary); }
+        .detail-info-item .info-value { font-size: 12px; font-weight: 500; }
+
+        .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 99; opacity: 0;
+            pointer-events: none; transition: opacity .25s; }
+        .backdrop.open { opacity: 1; pointer-events: auto; }
+
+        .hidden { display: none !important; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            header { padding: 16px; }
+            .detail-overlay { width: 100vw; }
+            .filters { gap: 8px; }
+            .filter-group input, .filter-group select { min-width: 100px; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+        .loading { text-align: center; padding: 60px; color: var(--text-secondary); }
+        .loading i { font-size: 32px; animation: spin 1s linear infinite; margin-bottom: 12px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-state { text-align: center; padding: 60px; color: var(--text-secondary); }
+        .empty-state i { font-size: 48px; margin-bottom: 12px; opacity: .5; }
+
+        /* Theme toggle */
+        .header-actions { margin-left: auto; display: flex; gap: 8px; }
+        .theme-toggle { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+            color: var(--text-secondary); padding: 6px 10px; cursor: pointer; font-size: 16px; transition: all .15s; }
+        .theme-toggle:hover { border-color: var(--accent); color: var(--text-primary); }
+
+        /* Collapsible sections */
+        .collapsible-section { margin-bottom: 20px; }
+        .collapsible-header { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 0;
+            color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; user-select: none; }
+        .collapsible-header:hover { color: var(--text-primary); }
+        .collapsible-header i.chevron { transition: transform .2s; font-size: 10px; }
+        .collapsible-header i.chevron.collapsed { transform: rotate(-90deg); }
+        .collapsible-header .inline-hint { font-weight: 500; color: var(--text-primary); text-transform: none; letter-spacing: 0; }
+        .collapsible-body { overflow: hidden; transition: max-height .3s ease, opacity .2s; max-height: 500px; opacity: 1; }
+        .collapsible-body.collapsed { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
+
+        /* Settings Modal */
+        .modal-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center;
+            justify-content: center; background: rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: opacity .2s; }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+        .modal-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+            width: 90%; max-width: 560px; max-height: 80vh; display: flex; flex-direction: column;
+            box-shadow: 0 16px 48px var(--shadow); }
+        .modal-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex;
+            justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 16px; font-weight: 700; }
+        .modal-header .close-btn { background: none; border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; }
+        .modal-tabs { display: flex; gap: 4px; padding: 10px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+        .modal-tab { padding: 4px 12px; border-radius: 14px; font-size: 12px; font-weight: 500; cursor: pointer;
+            border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); }
+        .modal-tab:hover { border-color: var(--accent); }
+        .modal-tab.active { background: var(--accent); color: #0d1117; border-color: var(--accent); }
+        .modal-body { flex: 1; overflow-y: auto; padding: 12px 20px; }
+        .modal-stat-row { display: flex; align-items: center; gap: 8px; padding: 5px 0;
+            border-bottom: 1px solid var(--border-row); }
+        .modal-stat-row.inactive { opacity: .4; }
+        .modal-stat-row .stat-label { flex: 1; font-size: 13px; }
+        .modal-stat-row .stat-inv { font-size: 10px; color: var(--score-bavg); }
+        .modal-stat-row input[type=number] { width: 54px; background: var(--bg-primary); border: 1px solid var(--border);
+            border-radius: 4px; color: var(--text-primary); padding: 3px 6px; font-size: 13px; font-family: inherit; text-align: center; }
+        .modal-stat-row input[type=number]:focus { border-color: var(--accent); outline: none; }
+        .modal-stat-add { margin-top: 8px; display: flex; gap: 8px; align-items: center; }
+        .modal-stat-add select { flex: 1; background: var(--bg-primary); border: 1px solid var(--border);
+            border-radius: 4px; color: var(--text-primary); padding: 4px 8px; font-size: 12px; font-family: inherit; }
+        .modal-stat-add button { background: var(--accent); border: none; color: #0d1117; border-radius: 4px;
+            padding: 4px 10px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .modal-total { padding: 8px 0; font-size: 13px; font-weight: 600; }
+        .modal-total.warn { color: var(--score-bavg); }
+        .modal-total.ok { color: var(--score-excellent); }
+        .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex;
+            justify-content: space-between; gap: 8px; }
+        .modal-footer button { padding: 6px 16px; border-radius: 6px; font-size: 13px; font-family: inherit;
+            cursor: pointer; font-weight: 500; border: 1px solid var(--border); }
+        .btn-default { background: var(--bg-primary); color: var(--text-primary); }
+        .btn-default:hover { border-color: var(--accent); }
+        .btn-primary { background: var(--accent); color: #0d1117; border-color: var(--accent); }
+        .btn-primary:hover { opacity: .9; }
+        .btn-danger { background: none; color: var(--score-poor); border-color: var(--score-poor); }
+        .btn-danger:hover { background: rgba(234,88,12,.1); }
+        .settings-btn { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+            color: var(--text-secondary); padding: 6px 10px; cursor: pointer; font-size: 14px; transition: all .15s; }
+        .settings-btn:hover { border-color: var(--accent); color: var(--text-primary); }
+
+        /* League Strength badge */
+        .league-str { display: inline-block; font-size: 10px; font-weight: 600; padding: 0 4px; border-radius: 3px;
+            background: var(--bg-primary); border: 1px solid var(--border); color: var(--accent); vertical-align: middle; margin-left: 2px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-futbol"></i>FM26 Scout Dashboard</h1>
+        <span class="subtitle">Analyse de recrutement basée sur les exports Football Manager</span>
+        <div class="header-actions">
+            <button class="settings-btn" id="settingsBtn" title="Paramètres des profils"><i class="fas fa-sliders"></i></button>
+            <button class="theme-toggle" id="themeToggle" title="Changer de thème"><i class="fas fa-moon"></i></button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Upload Zone -->
+        <input type="file" id="fileInput" accept=".csv">
+        <div class="upload-zone" id="uploadZone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h2>Charger un export CSV</h2>
+            <p>Glissez-déposez votre fichier CSV ou cliquez pour parcourir</p>
+        </div>
+
+        <!-- Dashboard (hidden until data loaded) -->
+        <div id="dashboard" class="hidden">
+            <!-- Summary Cards (collapsible, default closed) -->
+            <div class="collapsible-section">
+                <div class="collapsible-header" id="summaryToggle">
+                    <i class="fas fa-chevron-down chevron collapsed" id="summaryChevron"></i>
+                    <span>Résumé</span>
+                    <span class="inline-hint" id="summaryInline"></span>
+                </div>
+                <div class="collapsible-body collapsed" id="summaryWrap">
+                    <div class="summary-cards" id="summaryCards"></div>
+                </div>
+            </div>
+
+            <!-- Filters (collapsible, default open) -->
+            <div class="collapsible-section">
+                <div class="collapsible-header" id="filtersToggle">
+                    <i class="fas fa-chevron-down chevron" id="filtersChevron"></i>
+                    <span>Filtres</span>
+                    <span class="inline-hint" id="filtersInline"></span>
+                </div>
+                <div class="collapsible-body" id="filtersWrap">
+                    <div class="filters" id="filters">
+                        <div class="filter-group">
+                            <label>Recherche</label>
+                            <input type="text" id="filterName" placeholder="Nom du joueur...">
+                        </div>
+                        <div class="filter-group">
+                            <label>Club</label>
+                            <select id="filterClub"><option value="">Tous</option></select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Division</label>
+                            <select id="filterDivision"><option value="">Toutes</option></select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Âge min</label>
+                            <input type="number" id="filterAgeMin" placeholder="16" min="14" max="50">
+                        </div>
+                        <div class="filter-group">
+                            <label>Âge max</label>
+                            <input type="number" id="filterAgeMax" placeholder="45" min="14" max="50">
+                        </div>
+                        <div class="filter-group">
+                            <label>Min. minutes</label>
+                            <input type="number" id="filterMinutes" value="200" min="0" step="90">
+                        </div>
+                        <div class="filter-group">
+                            <label>Note min</label>
+                            <input type="number" id="filterScoreMin" value="50" min="0" max="100" step="5" style="min-width:70px">
+                        </div>
+                        <div class="filter-group">
+                            <label>Salaire max (K€)</label>
+                            <input type="number" id="filterSalaryMax" placeholder="∞" min="0" step="50" style="min-width:90px" title="Salaire max du joueur (valeur haute de la fourchette) en K€/mois">
+                        </div>
+                        <div class="filter-group">
+                            <label>Fin contrat ≤</label>
+                            <select id="filterContractEnd"><option value="">Toutes</option></select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Niv. ligue min</label>
+                            <input type="number" id="filterLeagueMin" placeholder="0" min="0" max="20" value="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Tabs -->
+            <div class="profile-tabs" id="profileTabs"></div>
+            <div id="styleTabs"></div>
+
+            <!-- Table -->
+            <div class="table-wrapper">
+                <table id="mainTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="backdrop" id="backdrop"></div>
+    <div class="detail-overlay" id="detailPanel">
+        <div class="detail-header">
+            <div class="detail-header-top">
+                <div>
+                    <div class="detail-player-name" id="detailName"></div>
+                    <div class="detail-meta" id="detailMeta"></div>
+                </div>
+                <button class="close-btn" id="closeDetail"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="detail-scores" id="detailScores"></div>
+        </div>
+        <div class="detail-section">
+            <h3>Informations</h3>
+            <div class="detail-info-grid" id="detailInfo"></div>
+        </div>
+        <div class="detail-section">
+            <h3>Radar <span id="radarProfileLabel" style="color:var(--accent)"></span></h3>
+            <div class="radar-container"><canvas id="radarChart"></canvas></div>
+        </div>
+        <div class="detail-section">
+            <h3>Statistiques détaillées</h3>
+            <div class="detail-stats-grid" id="detailStats"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-sliders" style="color:var(--accent);margin-right:8px"></i>Poids des profils</h2>
+                <button class="close-btn" id="settingsClose"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-tabs" id="settingsTabs"></div>
+            <div class="modal-body" id="settingsBody"></div>
+            <div class="modal-footer">
+                <button class="btn-danger" id="settingsReset"><i class="fas fa-undo"></i> Réinitialiser</button>
+                <div style="display:flex;gap:8px">
+                    <button class="btn-default" id="settingsCancel">Annuler</button>
+                    <button class="btn-primary" id="settingsApply"><i class="fas fa-check"></i> Appliquer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /* ====================================================================
+       FM26 SCOUT DASHBOARD - Engine
+       ==================================================================== */
+
+    // ── Column index mapping (CSV parsed without headers) ──
+    const C = {
+        // #general
+        NAME: 1, AGE: 2, CLUB: 3, COUNTRY: 4, DIVISION: 5, POSITION: 6,
+        SALARY: 7, CONTRACT: 8, MINUTES: 9, FM_RATING: 10,
+        // #GK
+        GOALS_CONCEDED: 11, SAVES: 12, XG_PREVENTED: 13, SAVE_PCT: 14,
+        // #defensive
+        CLEARANCES: 15, BLOCKS: 16, INTERCEPTIONS: 17, TACKLES: 18, DEF_TACKLES: 19,
+        // #recuperation and lost
+        POSS_RECOV: 20, POSS_LOST: 21,
+        // #pressing
+        PRESS_T: 22, PRESSING: 23,
+        // #aerial
+        AERIAL: 24, AERIAL_WON: 25,
+        // #pass
+        PASSES_TOTAL: 26, PASSES_SUCC: 27, PASS_PCT: 28, PASSES_PROG: 29,
+        // #creativity
+        KEY_PASSES: 30, XA: 31, CHANCES: 32,
+        // #center
+        CROSSES_ATT: 33, CROSSES_WON: 34,
+        // #dribble
+        DRIBBLES: 35,
+        // #shot
+        SHOTS: 36, SHOTS_OT_PCT: 37, XG_NP: 38, GOALS_P90: 39,
+        // #run
+        DISTANCE: 40, SPRINTS: 41
+    };
+
+    // ── Master stat catalog ──
+    const STAT_CATALOG = {
+        // GK
+        goals_conceded:{ label: 'Buts enc. (inv.)', get: p => p.stats[C.GOALS_CONCEDED], inverted: true },
+        saves:         { label: 'Arrêts',            get: p => p.stats[C.SAVES] },
+        xg_prevented:  { label: 'xG évités',         get: p => p.stats[C.XG_PREVENTED] },
+        save_pct:      { label: '% arrêts',          get: p => p.stats[C.SAVE_PCT] },
+        // Defensive
+        clearances:    { label: 'Dégagements',        get: p => p.stats[C.CLEARANCES] },
+        blocks:        { label: 'Blocks',             get: p => p.stats[C.BLOCKS] },
+        interceptions: { label: 'Interceptions',      get: p => p.stats[C.INTERCEPTIONS] },
+        tackles:       { label: 'Tackles',            get: p => p.stats[C.TACKLES] },
+        def_tackles:   { label: 'Tcl décisifs',       get: p => p.stats[C.DEF_TACKLES] },
+        // Recovery / Loss
+        poss_recov:    { label: 'Poss récup.',        get: p => p.stats[C.POSS_RECOV] },
+        poss_lost:     { label: 'Poss perdues (inv.)', get: p => p.stats[C.POSS_LOST], inverted: true },
+        // Pressing
+        press_total:   { label: 'Pressing tenté',     get: p => p.stats[C.PRESS_T] },
+        pressing:      { label: 'Pressing réussi',    get: p => p.stats[C.PRESSING] },
+        // Aerial
+        aerial:        { label: 'Aériens tentés',     get: p => p.stats[C.AERIAL] },
+        aerial_won:    { label: 'Aériens gagnés',     get: p => p.stats[C.AERIAL_WON] },
+        // Passing
+        passes_total:  { label: 'Passes tentées',     get: p => p.stats[C.PASSES_TOTAL] },
+        passes_succ:   { label: 'Passes réussies',    get: p => p.stats[C.PASSES_SUCC] },
+        pass_pct:      { label: '% passes',           get: p => p.stats[C.PASS_PCT] },
+        passes_prog:   { label: 'Passes prog.',       get: p => p.stats[C.PASSES_PROG] },
+        // Creativity
+        key_passes:    { label: 'Passes clés',        get: p => p.stats[C.KEY_PASSES] },
+        xa:            { label: 'xA (PdA)',           get: p => p.stats[C.XA] },
+        chances:       { label: 'Occasions créées',   get: p => p.stats[C.CHANCES] },
+        // Crossing
+        crosses:       { label: 'Centres tent.',      get: p => p.stats[C.CROSSES_ATT] },
+        crosses_won:   { label: 'Centres réussis',    get: p => p.stats[C.CROSSES_WON] },
+        // Dribble
+        dribbles:      { label: 'Dribbles',           get: p => p.stats[C.DRIBBLES] },
+        // Shooting
+        shots:         { label: 'Tirs',               get: p => p.stats[C.SHOTS] },
+        shots_ot_pct:  { label: '% cadrés',           get: p => p.stats[C.SHOTS_OT_PCT] },
+        xg:            { label: 'xG',                 get: p => p.stats[C.XG_NP] },
+        goals_p90:     { label: 'Buts /90',            get: p => p.stats[C.GOALS_P90] },
+        // Physical
+        distance:      { label: 'Distance',           get: p => p.stats[C.DISTANCE] },
+        sprints:       { label: 'Sprints',            get: p => p.stats[C.SPRINTS] },
+        // General
+        fm_rating:     { label: 'Note FM',            get: p => p.stats[C.FM_RATING] },
+    };
+
+    // Compat shims for rest of code
+    const STAT_GETTERS = {};
+    const INVERTED_STATS = new Set();
+    for (const [k, v] of Object.entries(STAT_CATALOG)) {
+        STAT_GETTERS[k] = v.get;
+        if (v.inverted) INVERTED_STATS.add(k);
+    }
+
+    // ── Profile defaults (immutable reference) ──
+    const DEFAULT_PROFILES = {
+        GK: { label: 'Gardien', icon: 'fa-mitten', weights: [
+            { key: 'fm_rating', w: 20 },
+            { key: 'xg_prevented', w: 25 }, { key: 'save_pct', w: 20 }, { key: 'saves', w: 15 },
+            { key: 'goals_conceded', w: 10 }, { key: 'poss_recov', w: 10 },
+        ]},
+        CB: { label: 'Déf. Central', icon: 'fa-shield-halved', weights: [
+            { key: 'fm_rating', w: 20 },
+            { key: 'interceptions', w: 10 }, { key: 'blocks', w: 10 }, { key: 'clearances', w: 10 }, 
+            { key: 'def_tackles', w: 15 }, { key: 'aerial_won', w: 25 }, { key: 'poss_recov', w: 10 }, 
+        ]},
+        FB: { label: 'Latéral', icon: 'fa-arrows-left-right', weights: [
+            { key: 'fm_rating', w: 20 },
+            { key: 'tackles', w: 15 }, { key: 'interceptions', w: 15 },
+            { key: 'distance', w: 15 }, { key: 'sprints', w: 10 }, { key: 'dribbles', w: 10 },
+            { key: 'poss_recov', w: 15 }, 
+        ]},
+        DM: { label: 'Mil. Défensif', icon: 'fa-helmet-safety', weights: [
+            { key: 'fm_rating', w: 20 },
+            { key: 'pass_pct', w: 15 },
+            { key: 'interceptions', w: 15 }, { key: 'poss_recov', w: 20 }, { key: 'tackles', w: 10 },
+            { key: 'pressing', w: 10 }, { key: 'distance', w: 10 },
+        ]},
+        CM: { label: 'Milieu', icon: 'fa-circle-dot', weights: [
+            { key: 'fm_rating', w: 20 },
+            { key: 'pressing', w: 15 }, { key: 'poss_recov', w: 15 }, { key: 'distance', w: 10 },
+            { key: 'passes_prog', w: 15 }, { key: 'pass_pct', w: 15 }, { key: 'key_passes', w: 10 },
+        ]},
+        AM: { label: 'Meneur', icon: 'fa-wand-magic-sparkles', weights: [
+            { key: 'fm_rating', w: 20 },
+            { key: 'passes_prog', w: 15 }, { key: 'pass_pct', w: 15 }, { key: 'key_passes', w: 15 },
+            { key: 'xa', w: 15 }, { key: 'xg', w: 10 }, { key: 'dribbles', w: 10 },
+        ]},
+        WG: { label: 'Ailier', icon: 'fa-bolt', weights: [
+            { key: 'fm_rating', w: 20 },
+            { key: 'key_passes', w: 15 }, { key: 'xa', w: 15 }, { key: 'dribbles', w: 20 },
+            { key: 'sprints', w: 10 }, { key: 'goals_p90', w: 10 },
+            { key: 'crosses', w: 10 },
+        ]},
+        ST: { label: 'Buteur', icon: 'fa-crosshairs', weights: [
+            { key: 'fm_rating', w: 20 },
+            { key: 'goals_p90', w: 25 }, { key: 'xg', w: 10 }, { key: 'shots_ot_pct', w: 10 },
+            { key: 'xa', w: 10 }, { key: 'sprints', w: 15 }, { key: 'dribbles', w: 10 },
+            
+        ]},
+    };
+
+    // ── Style variants per profile ──
+    const PROFILE_STYLES = {
+        GK: {
+            Ligne:     [{ key: 'fm_rating', w: 10 }, { key: 'xg_prevented', w: 25 }, { key: 'save_pct', w: 20 }, { key: 'goals_conceded', w: 15 }, { key: 'clearances', w: 10 }, { key: 'poss_recov', w: 10 }],
+            Relanceur:     [{ key: 'fm_rating', w: 10 }, { key: 'xg_prevented', w: 20 }, { key: 'save_pct', w: 15 }, { key: 'goals_conceded', w: 15 }, { key: 'passes_succ', w: 20 }, { key: 'pass_pct', w: 20 }],
+            'Libéro':     [{ key: 'fm_rating', w: 10 }, { key: 'xg_prevented', w: 20 }, { key: 'save_pct', w: 15 }, { key: 'goals_conceded', w: 15 }, { key: 'interceptions', w: 10 }, { key: 'poss_recov', w: 10 }, { key: 'pass_pct', w: 20 }],
+        },
+        CB: {
+            Stoppeur:  [{ key: 'fm_rating', w: 10 }, { key: 'interceptions', w: 10 }, { key: 'blocks', w: 10 }, { key: 'clearances', w: 20 }, { key: 'def_tackles', w: 10 }, { key: 'aerial_won', w: 30 }, { key: 'tackles', w: 10 }],
+            Relanceur: [{ key: 'fm_rating', w: 10 }, { key: 'pass_pct', w: 20 }, { key: 'passes_prog', w: 15 }, { key: 'passes_succ', w: 15 }, { key: 'poss_recov', w: 15 }, { key: 'aerial_won', w: 15 }, { key: 'poss_lost', w: 10 }],
+            'Excentré': [{ key: 'fm_rating', w: 10 }, { key: 'pass_pct', w: 20 }, { key: 'passes_prog', w: 15 }, { key: 'poss_recov', w: 15 }, { key: 'aerial_won', w: 15 }, { key: 'distance', w: 15 }, { key: 'dribbles', w: 10 }],
+        },
+        FB: {
+            'Défensif':  [{ key: 'tackles', w: 18 }, { key: 'interceptions', w: 15 }, { key: 'pressing', w: 15 }, { key: 'poss_recov', w: 12 }, { key: 'def_tackles', w: 12 }, { key: 'distance', w: 10 }, { key: 'pass_pct', w: 10 }, { key: 'sprints', w: 8 }],
+            Offensif:  [{ key: 'crosses', w: 15 }, { key: 'key_passes', w: 15 }, { key: 'passes_prog', w: 15 }, { key: 'dribbles', w: 12 }, { key: 'sprints', w: 12 }, { key: 'xa', w: 10 }, { key: 'distance', w: 10 }, { key: 'crosses_won', w: 11 }],
+            'Intérieur':  [{ key: 'crosses', w: 15 }, { key: 'key_passes', w: 15 }, { key: 'passes_prog', w: 15 }, { key: 'dribbles', w: 12 }, { key: 'sprints', w: 12 }, { key: 'xa', w: 10 }, { key: 'distance', w: 10 }, { key: 'crosses_won', w: 11 }],
+        },
+        DM: {
+            Sentinelle:[{ key: 'interceptions', w: 20 }, { key: 'def_tackles', w: 15 }, { key: 'tackles', w: 15 }, { key: 'blocks', w: 15 }, { key: 'poss_recov', w: 15 }, { key: 'aerial_won', w: 10 }, { key: 'pass_pct', w: 10 }],
+            Meneur:  [{ key: 'passes_prog', w: 18 }, { key: 'distance', w: 15 }, { key: 'pressing', w: 15 }, { key: 'passes_total', w: 12 }, { key: 'poss_recov', w: 10 }, { key: 'tackles', w: 10 }, { key: 'sprints', w: 10 }, { key: 'interceptions', w: 10 }],
+        },
+        CM: {
+            Organisateur:[{ key: 'passes_prog', w: 18 }, { key: 'pass_pct', w: 15 }, { key: 'key_passes', w: 15 }, { key: 'passes_total', w: 15 }, { key: 'xa', w: 12 }, { key: 'chances', w: 10 }, { key: 'poss_lost', w: 10 }, { key: 'fm_rating', w: 5 }],
+            'Box-to-Box':[{ key: 'distance', w: 15 }, { key: 'pressing', w: 15 }, { key: 'tackles', w: 12 }, { key: 'sprints', w: 12 }, { key: 'poss_recov', w: 12 }, { key: 'passes_prog', w: 10 }, { key: 'interceptions', w: 10 }, { key: 'def_tackles', w: 7 }, { key: 'aerial_won', w: 7 }],
+            'Récupérateur':[{ key: 'distance', w: 15 }, { key: 'pressing', w: 15 }, { key: 'tackles', w: 12 }, { key: 'sprints', w: 12 }, { key: 'poss_recov', w: 12 }, { key: 'passes_prog', w: 10 }, { key: 'interceptions', w: 10 }, { key: 'def_tackles', w: 7 }, { key: 'aerial_won', w: 7 }],
+        },
+        AM: {
+            'Créateur':  [{ key: 'key_passes', w: 20 }, { key: 'xa', w: 20 }, { key: 'chances', w: 15 }, { key: 'passes_prog', w: 12 }, { key: 'dribbles', w: 10 }, { key: 'pass_pct', w: 8 }, { key: 'poss_lost', w: 8 }, { key: 'passes_total', w: 7 }],
+            Attaquant: [{ key: 'goals_p90', w: 20 }, { key: 'xg', w: 20 }, { key: 'shots', w: 15 }, { key: 'shots_ot_pct', w: 12 }, { key: 'dribbles', w: 10 }, { key: 'key_passes', w: 8 }, { key: 'sprints', w: 8 }, { key: 'pressing', w: 7 }],
+        },
+        WG: {
+            Dribbleur: [{ key: 'dribbles', w: 20 }, { key: 'sprints', w: 15 }, { key: 'xg', w: 15 }, { key: 'goals_p90', w: 15 }, { key: 'shots', w: 10 }, { key: 'distance', w: 10 }, { key: 'key_passes', w: 8 }, { key: 'pressing', w: 7 }],
+            'Créateur':   [{ key: 'crosses', w: 18 }, { key: 'xa', w: 18 }, { key: 'key_passes', w: 15 }, { key: 'crosses_won', w: 12 }, { key: 'passes_prog', w: 12 }, { key: 'chances', w: 10 }, { key: 'dribbles', w: 8 }, { key: 'pass_pct', w: 7 }],
+            'Attaquant':   [{ key: 'crosses', w: 18 }, { key: 'xa', w: 18 }, { key: 'key_passes', w: 15 }, { key: 'crosses_won', w: 12 }, { key: 'passes_prog', w: 12 }, { key: 'chances', w: 10 }, { key: 'dribbles', w: 8 }, { key: 'pass_pct', w: 7 }],
+        },
+        ST: {
+            Finisseur: [{ key: 'goals_p90', w: 25 }, { key: 'xg', w: 22 }, { key: 'shots_ot_pct', w: 15 }, { key: 'shots', w: 13 }, { key: 'dribbles', w: 10 }, { key: 'sprints', w: 8 }, { key: 'pressing', w: 7 }],
+            Pivot:     [{ key: 'aerial_won', w: 18 }, { key: 'aerial', w: 12 }, { key: 'key_passes', w: 15 }, { key: 'pressing', w: 15 }, { key: 'xa', w: 12 }, { key: 'goals_p90', w: 10 }, { key: 'xg', w: 10 }, { key: 'poss_recov', w: 8 }],
+            'Créateur':     [{ key: 'aerial_won', w: 18 }, { key: 'aerial', w: 12 }, { key: 'key_passes', w: 15 }, { key: 'pressing', w: 15 }, { key: 'xa', w: 12 }, { key: 'goals_p90', w: 10 }, { key: 'xg', w: 10 }, { key: 'poss_recov', w: 8 }],
+        },
+    };
+
+    // Active profiles (mutable, loaded from localStorage or defaults)
+    let PROFILES = {};
+    const PROFILE_ORDER = ['GK','CB','FB','DM','CM','AM','WG','ST'];
+
+    function cloneProfiles(src) {
+        const out = {};
+        for (const [k, v] of Object.entries(src))
+            out[k] = { label: v.label, icon: v.icon, weights: v.weights.map(w => ({...w, label: STAT_CATALOG[w.key]?.label || w.key})) };
+        return out;
+    }
+
+    function loadProfiles() {
+        try {
+            const saved = localStorage.getItem('fm26-profiles');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                PROFILES = {};
+                for (const pk of PROFILE_ORDER) {
+                    const def = DEFAULT_PROFILES[pk];
+                    PROFILES[pk] = { label: def.label, icon: def.icon, weights: [] };
+                    if (parsed[pk]) {
+                        PROFILES[pk].weights = parsed[pk]
+                            .filter(w => w.key in STAT_CATALOG)
+                            .map(w => ({...w, label: STAT_CATALOG[w.key]?.label || w.key}));
+                    } else {
+                        PROFILES[pk].weights = def.weights.map(w => ({...w, label: STAT_CATALOG[w.key]?.label || w.key}));
+                    }
+                }
+                for (const pk of PROFILE_ORDER) currentStyles[pk] = currentStyles[pk] || 'Complet';
+                return;
+            }
+        } catch(e) {}
+        PROFILES = cloneProfiles(DEFAULT_PROFILES);
+        for (const pk of PROFILE_ORDER) currentStyles[pk] = currentStyles[pk] || 'Complet';
+    }
+
+    function saveProfiles() {
+        const out = {};
+        for (const pk of PROFILE_ORDER) out[pk] = PROFILES[pk].weights.map(w => ({ key: w.key, w: w.w }));
+        localStorage.setItem('fm26-profiles', JSON.stringify(out));
+    }
+
+    function getActiveWeights(profKey) {
+        const style = currentStyles[profKey] || 'Complet';
+        if (style === 'Complet') return PROFILES[profKey].weights;
+        const styleWeights = PROFILE_STYLES[profKey]?.[style];
+        if (!styleWeights) return PROFILES[profKey].weights;
+        return styleWeights.map(w => ({ ...w, label: STAT_CATALOG[w.key]?.label || w.key }));
+    }
+
+    // Score a single player for arbitrary weights, using cached refPool
+    function scorePlayerForWeights(player, profKey, weights) {
+        const refPool = cachedRefPools[profKey];
+        if (!refPool || refPool.length < 2) return null;
+        const refBounds = {};
+        for (const { key } of weights) {
+            const getter = STAT_GETTERS[key];
+            const values = refPool.map(p => getter(p)).sort((a, b) => a - b);
+            refBounds[key] = { p5: computePercentile(values, 1), p95: computePercentile(values, 95) };
+        }
+        const components = {};
+        let totalScore = 0;
+        for (const { key, w } of weights) {
+            const val = STAT_GETTERS[key](player);
+            const { p5, p95 } = refBounds[key];
+            let score;
+            if (p95 === p5) score = 50;
+            else if (INVERTED_STATS.has(key)) score = Math.max(0, Math.min(100, (p95 - val) / (p95 - p5) * 100));
+            else score = Math.max(0, Math.min(100, (val - p5) / (p95 - p5) * 100));
+            components[key] = Math.round(score);
+            totalScore += score * (w / 100);
+        }
+        const adjusted = totalScore * leagueFactor(player.division, player.country);
+        return { total: Math.round(adjusted), raw: Math.round(totalScore), components };
+    }
+
+    // ── Init profiles ──
+    let currentStyles = {};    // { GK: 'Complet', CB: 'Complet', ... }
+    loadProfiles();
+
+    // ── State ──
+    let allPlayers = [];
+    let filteredPlayers = [];
+    let currentProfile = 'ALL';
+    let currentPage = 0;
+    let sortCol = 'score';
+    let sortAsc = false;
+    const PAGE_SIZE = 50;
+    let radarChart = null;
+    let selectedDetailProfile = null;
+    let selectedDetailStyle = null;
+    let leagueStrengths = {};  // {'division|country': 0-20}
+    let cachedRefPools = {};   // { profKey: [player, ...] } for detail panel on-the-fly scoring
+    let leagueData = [];       // [{division, country, strength, reputation, players, factor}]
+    const leagueFloor = 0.20;  // minimum score factor for weakest leagues
+
+    // ── Number parsing ──
+    function parseNum(s) {
+        if (s == null || s === '') return 0;
+        s = String(s).trim().replace(/\s*%$/, '').replace(',', '.');
+        const n = parseFloat(s);
+        return isNaN(n) ? 0 : n;
+    }
+
+    function parseSalary(s) {
+        if (!s || s === 'N/A') return { avg: 0, max: 0 };
+        const amounts = [];
+        const re = /([\d]+(?:,\d+)?)\s*(M|K)?\s*€/gi;
+        let m;
+        while ((m = re.exec(s)) !== null) {
+            let val = parseFloat(m[1].replace(',', '.'));
+            const u = (m[2] || '').toUpperCase();
+            if (u === 'M') val *= 1000000;
+            else if (u === 'K') val *= 1000;
+            amounts.push(val);
+        }
+        if (amounts.length === 0) return { avg: 0, max: 0 };
+        const avg = amounts.reduce((a, b) => a + b) / amounts.length;
+        const max = Math.max(...amounts);
+        return { avg, max };
+    }
+
+    // "30/6/2029" → Date object (or null)
+    function parseContractDate(s) {
+        if (!s || s === 'N/A') return null;
+        const m = String(s).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (!m) return null;
+        return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]));
+    }
+
+    // ── Position parsing ──
+    // "MO (DG), BT (C)" → [{codes:['MO'], sides:['D','G']}, {codes:['BT'], sides:['C']}]
+    function parsePositionString(posStr) {
+        if (!posStr) return [];
+        const groups = posStr.split(/,\s*/);
+        const result = [];
+        for (const g of groups) {
+            const m = g.trim().match(/^([A-ZÀ-Ú\/]+)\s*(?:\(([A-ZÀ-Ú]+)\))?$/i);
+            if (!m) continue;
+            const codes = m[1].toUpperCase().split('/');
+            const sides = m[2] ? m[2].toUpperCase().split('') : ['C'];
+            result.push({ codes, sides });
+        }
+        return result;
+    }
+
+    function getProfiles(posStr) {
+        const groups = parsePositionString(posStr);
+        const profiles = new Set();
+        for (const { codes, sides } of groups) {
+            for (const code of codes) {
+                if (code === 'GB') { profiles.add('GK'); continue; }
+                if (code === 'D') {
+                    if (sides.includes('C')) profiles.add('CB');
+                    if (sides.includes('D') || sides.includes('G')) profiles.add('FB');
+                    continue;
+                }
+                if (code === 'AL') { profiles.add('FB'); continue; }
+                if (code === 'MD') { profiles.add('DM'); profiles.add('CM'); continue; }
+                if (code === 'M') {
+                    if (sides.includes('C')) profiles.add('CM');
+                    if (sides.includes('D') || sides.includes('G')) profiles.add('WG');
+                    continue;
+                }
+                if (code === 'MO') {
+                    if (sides.includes('C')) profiles.add('AM');
+                    if (sides.includes('D') || sides.includes('G')) profiles.add('WG');
+                    continue;
+                }
+                if (code === 'BT') { profiles.add('ST'); continue; }
+            }
+        }
+        return [...profiles];
+    }
+
+    // ── CSV Parsing ──
+    function loadCSV(file) {
+        const uploadZone = document.getElementById('uploadZone');
+        uploadZone.innerHTML = '<i class="fas fa-spinner fa-spin"></i><p>Chargement en cours...</p>';
+
+        Papa.parse(file, {
+            header: false,
+            skipEmptyLines: true,
+            complete: function(results) {
+                const rows = results.data;
+                if (rows.length < 2) { alert('Fichier vide ou invalide'); return; }
+
+                // Skip header row (index 0)
+                const players = [];
+                for (let i = 1; i < rows.length; i++) {
+                    const r = rows[i];
+                    if (!r[C.NAME] || !r[C.NAME].trim()) continue;
+
+                    const minutes = parseNum(r[C.MINUTES]);
+
+                    // Build stats array (numeric values by column index)
+                    const stats = {};
+                    for (let ci = 10; ci <= 41; ci++) {
+                        stats[ci] = parseNum(r[ci]);
+                    }
+
+                    const posStr = r[C.POSITION] || '';
+                    const profiles = getProfiles(posStr);
+                    const salaryStr = (r[C.SALARY] || '').trim();
+                    const salaryParsed = parseSalary(salaryStr);
+                    const contractStr = (r[C.CONTRACT] || '').trim();
+
+                    players.push({
+                        idx: players.length,
+                        name: r[C.NAME].trim(),
+                        age: parseNum(r[C.AGE]),
+                        club: (r[C.CLUB] || '').trim(),
+                        country: (r[C.COUNTRY] || '').trim(),
+                        division: (r[C.DIVISION] || '').trim(),
+                        position: posStr,
+                        salary: salaryStr,
+                        salary_num: salaryParsed.avg,
+                        salary_max: salaryParsed.max,
+                        contractEnd: contractStr,
+                        contractDate: parseContractDate(contractStr),
+                        minutes,
+                        stats,
+                        profiles,
+                        scores: {},      // {profileKey: {total, components:{statKey: percentile}}}
+                        bestProfile: null,
+                        bestScore: 0,
+                    });
+                }
+
+                allPlayers = players;
+                calculateLeagueStrengths();
+                calculateAllScores();
+                initDashboard();
+            },
+            error: function(err) {
+                alert('Erreur de parsing: ' + err.message);
+            }
+        });
+    }
+
+    // ── Percentile helpers ──
+    function interpolateArr(sortedArr, idx) {
+        const lo = Math.floor(idx);
+        const hi = Math.ceil(idx);
+        if (lo === hi || hi >= sortedArr.length) return sortedArr[Math.min(lo, sortedArr.length - 1)];
+        return sortedArr[lo] + (sortedArr[hi] - sortedArr[lo]) * (idx - lo);
+    }
+
+    function computePercentile(sortedArr, pct) {
+        const idx = (sortedArr.length - 1) * pct / 100;
+        return interpolateArr(sortedArr, idx);
+    }
+
+    // ── League reputation data (from FM26 classement_ligues.csv) ──
+    const REPUTATION_SCORES = {Superbe:20,Excellente:18,"Très bonne":15,Bonne:12,"Assez bonne":10,"Dans la moyenne":7,"Sous la moyenne":4,Médiocre:2};
+    const LEAGUE_REP_LOOKUP = {};
+    (function() {
+        const d = {
+            20: [
+                "Premier League|Angleterre"
+            ],
+            18: [
+                "Serie A|Italie","Première Division|Espagne","Bundesliga|Allemagne",
+                "Ligue 1 McDonald's|France","Eredivisie|Pays-Bas","Première Ligue|Portugal"
+            ],
+            15: [
+                "Jupiler Pro League|Belgique","1ère Division|Brésil","1ère Division|Rép. tchèque",
+                "Super League|Turquie","1ère Division|Argentine","Super League 1|Grèce",
+                "1ère Division|Mexique","Première division|Norvège","Première Ligue|Autriche",
+                "William Hill Premiership|Écosse","PKO BP Ekstraklasa|Pologne","3F Superliga|Danemark",
+                "MLS|États-Unis"
+            ],
+            12: [
+                "Super League|Suisse","Première Ligue|Israël","Sky Bet Championship|Angleterre",
+                "Division A|Chypre","1ère division saoudienne|Arabie saoudite","Première Ligue|Suède",
+                "1ère Division|Croatie","1ère division|Paraguay","Super League|Serbie",
+                "Serie A équatorienne|Équateur","Championnat d'Ukraine|Ukraine","J1 League|Japon",
+                "Division I|Hongrie","Première Ligue|Russie","1ère Division|Colombie",
+                "SuperLiga|Roumanie","2ème Division|Espagne","Bundesliga 2|Allemagne",
+                "1ère Division|Uruguay","1ère Division|Slovaquie","Serie BKT|Italie",
+                "Championnat A|Bulgarie","1ère Division|Slovénie","K League 1|Corée du Sud",
+                "1ère Division|Chili","Yuksak Liqa d'Azerbaïjan|Azerbaïdjan","Ligue 2 BKT|France"
+            ],
+            10: [
+                "Premier Division|Égypte","2ème Division|Brésil","ADNOC Pro League|E.A.U.",
+                "1ère Division|Norvège","Símadeildin|Islande","1ère Division|Pérou",
+                "Super Liga de Moldavie|Moldavie","Première division|Maroc","2ème Division|Argentine",
+                "Keuken Kampioen Divisie|Pays-Bas","Premier League|Iran","Première Division|Qatar",
+                "Première Division|Bosnie","League 1|Algérie","D1|Costa Rica",
+                "Prem. d'afrique du Sud|Afrique du Sud","Premier League|Arménie","Première Ligue|Finlande",
+                "1. League|Turquie","PL du Kazakhstan|Kazakhstan","Sky Bet League One|Angleterre",
+                "Superleague d'Ouzbékistan|Ouzbékistan","Première Division|Bolivie","Deuxième Ligue|Portugal",
+                "Ligue 1 de Thaïlande|Thaïlande","2ème Division|Rép. tchèque","Challenge League|Suisse",
+                "Isuzu UTE A-League|Australie","Challenger Pro League|Belgique","D2|Pologne",
+                "Super League|Chine","2ème Division|Grèce","Super League|Malaisie",
+                "Premier League|Vietnam","Ligue 1|Tunisie","Première Division du Véné|Venezuela",
+                "1ère Division Elite|Suède","Ligue Nationale|Honduras","Première division|Jordanie",
+                "Superligue|Albanie","2ème Division|Croatie","3ème Division|Brésil",
+                "Première Ligue|Irlande","Stars League|Irak","1ère Division|Autriche",
+                "Premiership|Monténégro","Championnat Leumit|Israël","D3|Portugal",
+                "Canadian Premier League|Canada","Champ. de D1|Finlande","3ème Division|Argentine",
+                "3. Liga|Allemagne","Championnat d'État|Brésil","Betinia Liga|Danemark",
+                "William Hill Championship|Écosse","J2 League|Japon","Ligue 1|Macédoine du N.",
+                "Première Ligue|Bahreïn","Championnat Supérieur|Biélorussie","Ligue O|Oman",
+                "1ère Division B|Chili","2ème Division|Colombie","Liga de Expansión|Mexique",
+                "Champ. Singapour|Singapour","Première division koweïti|Koweït","D1 serbe|Serbie",
+                "Nationale 1 amateur|Belgique","Première division|Tanzanie","Première Division|Panama",
+                "Ligue Nationale|Guatemala","Division II|Hongrie","2ème Division|Slovénie",
+                "2ème Division|Norvège","D1 Fédération espagnole|Espagne","Tonybet Virsliga|Lettonie",
+                "Première Division|Salvador","Superleague|Kosovo","National|France",
+                "First Division League|Arabie saoudite","2. League|Turquie","Championnat National|Portugal",
+                "Yokary Ligasy|Turkménistan","Division nationale|Inde","K League 2|Corée du Sud",
+                "1ère Division|Hong Kong (RP de Chine)","Division Supérieure|Kirghizistan","Division 1|États-Unis",
+                "D2 roumaine|Roumanie","Sky Bet League Two|Angleterre","Championnat régional|Allemagne",
+                "Premier League|Nigeria","Super League|Indonésie","Première division|Maroc",
+                "1ère Division|Finlande","D4|Brésil","Premiership|Féroé",
+                "Premier League|Soudan","PL jamaïcaine|Jamaïque","1ère Division|Afrique du Sud",
+                "1ère division|Thaïlande","Division C|Grèce","4ème division|Argentine",
+                "Série C|Italie","1ère Division|Liban","Liga Mayor|Rép. Dominicaine",
+                "Division Supérieure|Tadjikistan","Première Division|Nicaragua","Championnat B|Bulgarie",
+                "2ème Division|Slovaquie","1ère Division|Islande","Premier League|Trinité-et-Tobago",
+                "Ligue nationale|Nouvelle-Zélande","1ère Division|Russie","Série B|Équateur",
+                "LNNZ - Championnat|Nouvelle-Zélande"
+            ],
+            7: [
+                "Première Ligue|Ukraine","D2|Costa Rica","CampoBet 2. Division|Danemark",
+                "Premiership|Malte","Ligue Nationale|Bangladesh","Premier League|Libye",
+                "Premier League du Cambodg|Cambodge","D2|Égypte","Division 2 A|Égypte",
+                "Pro League d'Ouzbékistan|Ouzbékistan","Ligue 4 de Croatie|Croatie","TOPsport A lyga|Lituanie",
+                "Girabola|Angola","Première division de la D|R.D. Congo","Ligue de Football|Philippines",
+                "Première division|Haïti","Kategoria 1|Albanie","3ème Division|Croatie",
+                "2ème division|Pologne","2ème Division|Finlande","1ère Division|Syrie",
+                "Première Ligue|Estonie","Ligue Azadegan|Iran","J3 League|Japon",
+                "2ème division pro|Uruguay","Division Régionale|Autriche","Tweede Divisie des Pays-B|Pays-Bas",
+                "Major League du Suriname|Suriname","Ligue 2|Tunisie","Enterprise National|Angleterre",
+                "NIFL Premiership|Irlande du Nord","Division Nationale|Luxembourg","Liga de Ascenso Nica|Nicaragua",
+                "Deuxième Division|Venezuela","Primera División A|Guatemala","William Hill League 1|Écosse",
+                "Division 2 A|Russie","3ème division|Turquie","JD Cymru Premier|Pays de Galles",
+                "1ère Division|Chine","2ème Division|Pérou","D1|Monténégro",
+                "1ère Division A|E.A.U.","Ligue 1|Guinée","Ligue Nationale Géorgie|Géorgie",
+                "1ère Division|Suède","National 2|France","Liga de Ascenso|Honduras",
+                "Deuxième Division|Salvador","Ligue 1 Promotion|Suisse","Nippon Soccer League|Japon",
+                "Premier League  du Ghana|Ghana","Élite One|Cameroun","Première division|Antigua-et-Barbuda",
+                "Régionale 1|Martinique","LFPR|Porto Rico","3ème Division|Rép. tchèque",
+                "Ligue K3|Corée du Sud","Deuxième division|Chili","MLS Next Pro|États-Unis",
+                "division inférieure|Grèce","Ligue nationale|Birmanie","Premier League de Taipei|Taipei chinois (RPC)",
+                "Première division arménie|Arménie","2ème division|Paraguay","TT PFL Tier 2|Trinité-et-Tobago",
+                "Première division|Bosnie","2ème Division|Ukraine","1ère division|Côte d'Ivoire",
+                "Gib Football League|Gibraltar","Liga 1 de Moldavie|Moldavie","League1 Canada|Canada",
+                "Deuxième division amateur|Belgique","5éme division|Argentine","Championnat National|Inde",
+                "D2 du Qatar|Qatar","3ème Division|Norvège","CampoBet 3. Division|Danemark",
+                "Division inférieure|Allemagne","CFFJ|Jamaïque","Première division|Kosovo",
+                "Première division A|Kosovo","Première division B|Kosovo","Deuxième division|Islande",
+                "Première division Série A|Mexique","D1|Andorre","Régional 1 de Guyane|Guyane",
+                "1ère Division|Biélorussie","Division 2 de USSL|États-Unis","Division III hongroise|Hongrie"
+            ],
+            4: [
+                "Premières régionales|Nouvelle-Zélande","D2|Serbie","Liga 3|Roumanie",
+                "2ème Division|Afrique du Sud","Championnat national du C|Congo","Première division|Botswana",
+                "Première division|Rwanda","Ligue Dhivehi|Maldives","1ère Division|Jordanie",
+                "Premier League de Zambie|Zambie","Première division|Éthiopie","D1 d'Azerbaïjan|Azerbaïdjan",
+                "D1 kazak|Kazakhstan","1ère div. amateur|Uruguay","Fiji National League|Fidji",
+                "NIFL Championship|Irlande du Nord","National 3 français|France","Ligue 2|Macédoine du N.",
+                "Division 2 B|Russie","Ligue amateur régionale|Turquie","Ligue A1|Malaisie",
+                "Championnat|Indonésie","Ligue 2 nationale|Géorgie","William Hill League 2|Écosse",
+                "Première division|Tahiti","Premier League|Ouganda","Régionale 1|Guadeloupe",
+                "D2|Bolivie","Division Amateur|Algérie","Ascenso Nacional de l'Équ|Équateur",
+                "Zone Intérieure|Uruguay","Ligue universitaire|Japon","Première division|Kenya",
+                "Premier Leagues|Australie","Division inférieure|Pologne","3ème division|Islande",
+                "Championnat OL1|Canada","Nippon National Regional League|Japon","D2|Syrie",
+                "Deuxième Division|Guatemala","Ligue 2|Kosovo","Série D|Italie",
+                "Derde Divisie A|Pays-Bas","Championnat PNG|Papouasie","Première division du Togo|Togo",
+                "Ligue nationale|Cuba","1ère division|Mongolie","Super League|Saint-Kitts",
+                "Super Ligue|Guyana","Ligue de Curaçao|Curaçao","Groupe amateur \"V\" bulgar|Bulgarie",
+                "Division 2 B|Égypte","Derde Divisie B|Pays-Bas","Ligues Highland-Lowland|Écosse",
+                "Première division|Mozambique","Première division|Burundi","Super Ligue|Niger",
+                "D1 de Cisjordanie|Palestine","2ème Division|Hong Kong (RP de Chine)","D1 ouzbek|Ouzbékistan",
+                "Division d'Honneur|Nlle-Calédonie","Premier League Gaza|Palestine","PL du Kurdistan|Irak",
+                "Division di Honor d'Aruba|Aruba","Division d'honeur|Luxembourg","1ère Division|Vietnam",
+                "Championnat|Thaïlande","Division 3 du Pérou|Pérou","Super 8 du Honaria|Salomon",
+                "Ligue 1|Lituanie","NIFL Premier Intermediate|Irlande du Nord","3ème Division|Colombie",
+                "2ème division|Iran","2ème Division|Suède","Division régionale|Portugal",
+                "3ème Division|Chili","Coupe du Pérou|Pérou","Ligue K4|Corée du Sud",
+                "Quatrième division|Norvège","Enterprise North/South|Angleterre","Extinct Division|Ukraine",
+                "1ère Division|Macao (RP de Chine)","Première division|Mali","Campionato Sammarinese|Saint-Marin",
+                "R1|La Réunion","1ère Division|Estonie","D2|Lettonie",
+                "Championnat de Tanzanie|Tanzanie","2ème Division|Arabie saoudite","Ligue amateur 1|Tunisie",
+                "Première division|Sénégal","Premier Division|Saint-Vincent","Première division|Grenade",
+                "1ère Division|Irlande","D1 régionales|Nouvelle-Zélande","Division B|Chypre",
+                "Élite 2|Cameroun","3ème Division|Slovénie","Première division|Zimbabwe",
+                "Ligue 1 du Bénin|Bénin","National Foot 1|Gabon","Première division Gambie|Gambie",
+                "Premier League|Lesotho","Première division|Burkina Faso","Première division|Guinée Éq.",
+                "Première division|Namibie","Première division|Irak","Ligue 1|Suisse",
+                "Niveau 4 d'Autriche|Autriche","Ligue 3 du Kosovo|Kosovo","EoS 1st Div|Écosse",
+                "WoS 1st Div|Écosse","2ème Division|Chine","3ème Division|Inde",
+                "Ligue A israélienne|Israël","Segunda division Nica|Nicaragua","LAU|Ukraine",
+                "D2 amateur|Uruguay","Régional 1|France","Première division|Sainte-Lucie",
+                "Ligue Nationale d'Ascenso|Panama","Deuxième division d'Angol|Angola","Ligue nationale|Kirghizistan",
+                "Parish L de Jamaïque|Jamaïque","Promocional Amateur|Argentine"
+            ],
+            2: [
+                "1ère division|Koweït","Première division Série B|Mexique","Championnat de Calédonie|Écosse",
+                "WoS 2nd Div|Écosse","EoS 2nd Div|Écosse","Ligue nord-coréenne|Corée du Nord",
+                "D1|Bahreïn","Première division|Zambie","1ère Division|Antigua-et-Barbuda",
+                "Ligue supérieure|Éthiopie","D1 de Libye|Libye","L2 de BiH|Bosnie",
+                "Ligue nationale|Bhoutan","Division 1|Ghana","D2 d'Haïti|Haïti",
+                "Tercera División (Primera|Paraguay","Vierde Divisie A|Pays-Bas","Vierde Divisie B|Pays-Bas",
+                "Vierde Divisie C|Pays-Bas","Vierde Divisie D|Pays-Bas","Quatrième division|Islande",
+                "Quatrième division|Pologne","Super D1|Mauritanie","Ligue des Îles Caïmans|Caïman",
+                "D1|Bermudes","Premier League des Îles T|Turks-et-Caïcos","2ème Division|Liban",
+                "Eerste Divise|Suriname","Botola Amateurs 1|Maroc","4ème Division|Rép. tchèque",
+                "4ème Division|Inde","Division inférieure|Croatie","League2 Ontario|Canada",
+                "Première division|Guinée-Bissau","Super League|Malawi","Premier League|Sierra Leone",
+                "Première division|Zanzibar","N1 League|Saint-Kitts","D1|Féroé",
+                "Ligues provinciales|Cuba","Ligue 1|Turkménistan","D2 kazak|Azerbaïdjan",
+                "Ligue de Développement US|États-Unis","Midlands League|Écosse","1ères div régionales|Angleterre",
+                "Premier League|Inde","Pro League|Madagascar","JD Cymru North/South|Pays de Galles",
+                "Régionale 2|Martinique","Liga 3|Géorgie","WoS 3rd Div|Écosse",
+                "EoS 3rd Div|Écosse","Première division|Centrafrique","Premier League|Eswatini",
+                "Premier League BVI|Îles Vierges","2ème Div. de São Paulo|Brésil","1ère Division|Malte",
+                "Première division|Oman","FQPL3 - Metro|Australie","Unterligen Niveau 5|Autriche",
+                "2ème Division de Rio|Brésil","Super League de Bhoutan|Bhoutan","Ligue du Bangladesh|Bangladesh",
+                "Senegalese National 1|Sénégal","Troisième division amateu|Belgique","Troisième division|Russie",
+                "Super League Amateur|Turquie","Champ. pro. Goan|Inde","NFL Division 1|Singapour",
+                "2ème catégorie|Albanie","D1 du Luxembourg|Luxembourg","Ligue 2|E.A.U.",
+                "Troisième division|Égypte","Div rég D1 d'Ukraine|Ukraine","Premier League Mumbai|Inde",
+                "Première division|Soudan du Sud","Premier League de Kerala|Inde","Division D'Honneur|Saint-Martin",
+                "Championnat|Saint-Martin (PB)","Premier League|Bélize","Deuxième division|Côte d'Ivoire",
+                "Super League du Kénya|Kenya","Big League|Ouganda","D2 Regionale de la Réunio|La Réunion",
+                "Ligues inférieures|Rép. Dominicaine","Régional 2 de Guyane|Guyane","Division 3|Chypre",
+                "Ligue 3|Macédoine du N.","D4 roumaine|Roumanie","Ligue Ikkinchi|Ouzbékistan",
+                "4ème division|Paraguay","Danmarksserien|Danemark","Eccellenza|Italie",
+                "North Premier Division|Écosse","1ères div régionales|Angleterre","Champ. Amateur|Corée du Sud",
+                "2ème Division d'État|Brésil","Ligue Lao|Laos","Première division|Tchad",
+                "Ligue amateur A2|Malaisie","Deuxième division|Syrie","Ligue Nuswantara|Indonésie",
+                "Ligue 2|Lettonie","Ligue régionale|Kirghizistan","WoS 4th Div|Écosse",
+                "Compétition du Cap-Vert|Cap-Vert","Première division|Djibouti","Première division|Somalie",
+                "Ligue universitaire|Taipei chinois (RPC)","Première division|Dominique","Division senior|Bahamas",
+                "Premier League|Barbade","Championnat|Bonaire","Ligue senior|Anguilla",
+                "Premier League|Îles Vierges US","2ème Division|Andorre","3ème Division|Hong Kong (RP de Chine)",
+                "Première ligue B|Estonie","Ligue II Division A|Lituanie","Liga 4|Géorgie",
+                "Ligue zone|Serbie","Div inférieure amateur|Grèce","Division 5|Islande"
+            ],
+        };
+        for (const [score, keys] of Object.entries(d))
+            for (const k of keys) LEAGUE_REP_LOOKUP[k] = parseInt(score);
+    })();
+
+    // ── League Strength (reputation-based from FM26 classement_ligues.csv) ──
+    function calculateLeagueStrengths() {
+        // Count players per league (compound key: division|country)
+        const playerCounts = {};
+        const leagueKeys = new Set();
+        for (const p of allPlayers) {
+            if (!p.division) continue;
+            const key = p.division + '|' + (p.country || '');
+            leagueKeys.add(key);
+            playerCounts[key] = (playerCounts[key] || 0) + 1;
+        }
+
+        // Build leagueStrengths from reputation lookup
+        leagueStrengths = {};
+        for (const key of leagueKeys) {
+            leagueStrengths[key] = LEAGUE_REP_LOOKUP[key] ?? 0;
+        }
+
+        // Build league data for the Leagues tab
+        leagueData = [...leagueKeys].map(key => {
+            const [div, country] = key.split('|');
+            const strength = leagueStrengths[key];
+            return {
+                division: div,
+                country: country || '',
+                strength,
+                players: playerCounts[key] || 0,
+                reputation: Object.entries(REPUTATION_SCORES).find(([, v]) => v === strength)?.[0] || '?',
+                factor: leagueFloor + (1 - leagueFloor) * (strength / 20),
+            };
+        }).sort((a, b) => b.strength - a.strength || a.division.localeCompare(b.division));
+    }
+
+    function getLeagueStrength(division, country) {
+        return leagueStrengths[division + '|' + (country || '')] ?? 0;
+    }
+
+    function leagueFactor(division, country) {
+        const str = getLeagueStrength(division, country);
+        return leagueFloor + (1 - leagueFloor) * (str / 20);
+    }
+
+    function calculateAllScores() {
+        const minMinutes = parseNum(document.getElementById('filterMinutes')?.value) || 450;
+        const REF_MIN_MINUTES = 500;
+        const REF_MIN_LEAGUE = 15;
+
+        // Clear previous scores
+        cachedRefPools = {};
+        for (const p of allPlayers) {
+            p.scores = {};
+            p.bestScore = 0;
+            p.bestProfile = null;
+        }
+
+        // Reference leagues: strength >= 15 (Très bonne and above)
+        const refLeagues = new Set(
+            Object.entries(leagueStrengths)
+                .filter(([, s]) => s >= REF_MIN_LEAGUE)
+                .map(e => e[0])
+        );
+
+        for (const profKey of PROFILE_ORDER) {
+            const weights = getActiveWeights(profKey);
+
+            // Reference pool: top leagues, 500+ min, matching profile
+            const refPool = allPlayers.filter(p =>
+                p.profiles.includes(profKey) &&
+                p.minutes >= REF_MIN_MINUTES &&
+                refLeagues.has(p.division + '|' + (p.country || ''))
+            );
+            if (refPool.length < 2) continue;
+            cachedRefPools[profKey] = refPool;
+
+            // Compute P1/P95 bounds for each stat from reference pool
+            const refBounds = {};
+            for (const { key } of weights) {
+                const getter = STAT_GETTERS[key];
+                const values = refPool.map(p => getter(p)).sort((a, b) => a - b);
+                refBounds[key] = {
+                    p5: computePercentile(values, 1),
+                    p95: computePercentile(values, 95)
+                };
+            }
+
+            // Score all eligible players using the reference scale
+            const eligible = allPlayers.filter(p => p.profiles.includes(profKey) && p.minutes >= minMinutes);
+            if (eligible.length === 0) continue;
+
+            for (const player of eligible) {
+                const components = {};
+                let totalScore = 0;
+                for (const { key, w } of weights) {
+                    const val = STAT_GETTERS[key](player);
+                    const { p5, p95 } = refBounds[key];
+                    let score;
+                    if (p95 === p5) {
+                        score = 50;
+                    } else if (INVERTED_STATS.has(key)) {
+                        score = Math.max(0, Math.min(100, (p95 - val) / (p95 - p5) * 100));
+                    } else {
+                        score = Math.max(0, Math.min(100, (val - p5) / (p95 - p5) * 100));
+                    }
+                    components[key] = Math.round(score);
+                    totalScore += score * (w / 100);
+                }
+                const adjusted = totalScore * leagueFactor(player.division, player.country);
+                player.scores[profKey] = {
+                    total: Math.round(adjusted),
+                    raw: Math.round(totalScore),
+                    components
+                };
+            }
+        }
+
+        // Compute best profile/score
+        for (const p of allPlayers) {
+            p.bestScore = 0;
+            p.bestProfile = null;
+            for (const [prof, data] of Object.entries(p.scores)) {
+                if (data.total > p.bestScore) {
+                    p.bestScore = data.total;
+                    p.bestProfile = prof;
+                }
+            }
+        }
+    }
+
+    // ── Score Colors ──
+    function getScoreColor(score) {
+        if (score >= 90) return 'var(--score-elite)';
+        if (score >= 80) return 'var(--score-excellent)';
+        if (score >= 70) return 'var(--score-vgood)';
+        if (score >= 60) return 'var(--score-good)';
+        if (score >= 50) return 'var(--score-avg)';
+        if (score >= 40) return 'var(--score-bavg)';
+        if (score >= 30) return 'var(--score-poor)';
+        return 'var(--score-vpoor)';
+    }
+
+    function scoreBadgeHTML(score, small) {
+        if (score == null) return '';
+        const color = getScoreColor(score);
+        const cls = small ? 'score-badge small' : 'score-badge';
+        return `<span class="${cls}" style="color:${color};background:${color.replace(')', ',0.13)').replace('var(', 'color-mix(in srgb, ').replace(',0.13)', ' 13%, transparent)')}">${score}</span>`;
+    }
+
+    // Simpler approach for badge backgrounds
+    function scoreBadge(score, small) {
+        if (score == null) return '';
+        const isDark = getTheme() === 'dark';
+        const a = isDark ? 0.13 : 0.12;
+        const colors = isDark ? {
+            90: '#ffd700', 80: '#22c55e', 70: '#86efac', 60: '#a3e635',
+            50: '#eab308', 40: '#f97316', 30: '#ea580c', 0: '#ef4444',
+        } : {
+            90: '#b8860b', 80: '#1a7f37', 70: '#2da44e', 60: '#4d7c0f',
+            50: '#9a6700', 40: '#bc4c00', 30: '#cf222e', 0: '#a40e26',
+        };
+        let fg;
+        for (const [threshold, c] of Object.entries(colors).sort((x,y) => y[0] - x[0])) {
+            if (score >= parseInt(threshold)) { fg = c; break; }
+        }
+        // Parse hex to rgba for background
+        const r = parseInt(fg.slice(1,3),16), g = parseInt(fg.slice(3,5),16), b = parseInt(fg.slice(5,7),16);
+        const bg = `rgba(${r},${g},${b},${a})`;
+        const cls = small ? 'score-badge small' : 'score-badge';
+        return `<span class="${cls}" style="color:${fg};background:${bg}">${score}</span>`;
+    }
+
+    // ── Dashboard Initialization ──
+    function initDashboard() {
+        const uploadZone = document.getElementById('uploadZone');
+        uploadZone.classList.add('loaded');
+        uploadZone.innerHTML = `<i class="fas fa-check-circle" style="color:var(--score-excellent)"></i>
+            <p><strong>${allPlayers.length}</strong> joueurs chargés</p>`;
+
+        document.getElementById('dashboard').classList.remove('hidden');
+        populateFilters();
+        renderProfileTabs();
+        applyFilters();
+    }
+
+    function populateFilters() {
+        // Clubs
+        const clubs = [...new Set(allPlayers.map(p => p.club).filter(Boolean))].sort();
+        const clubSel = document.getElementById('filterClub');
+        clubs.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; clubSel.appendChild(o); });
+
+        // Divisions
+        const divs = [...new Set(allPlayers.map(p => p.division).filter(Boolean))].sort();
+        const divSel = document.getElementById('filterDivision');
+        divs.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; divSel.appendChild(o); });
+
+        // Contract years
+        const years = [...new Set(allPlayers.map(p => p.contractDate ? p.contractDate.getFullYear() : null).filter(Boolean))].sort();
+        const contractSel = document.getElementById('filterContractEnd');
+        years.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; contractSel.appendChild(o); });
+    }
+
+    function renderProfileTabs() {
+        const container = document.getElementById('profileTabs');
+        let html = `<div class="profile-tab active" data-profile="ALL">Tous</div>`;
+        for (const key of PROFILE_ORDER) {
+            const p = PROFILES[key];
+            html += `<div class="profile-tab" data-profile="${key}"><i class="fas ${p.icon}"></i> ${key}</div>`;
+        }
+        html += `<div class="profile-tab" data-profile="LEAGUES"><i class="fas fa-ranking-star"></i> Ligues</div>`;
+        container.innerHTML = html;
+        container.querySelectorAll('.profile-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                container.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentProfile = tab.dataset.profile;
+                currentPage = 0;
+                if (currentProfile === 'LEAGUES') {
+                    sortCol = 'strength'; sortAsc = false;
+                } else {
+                    sortCol = 'score'; sortAsc = false;
+                }
+                renderStyleTabs();
+                applyFilters();
+            });
+        });
+    }
+
+    function renderStyleTabs() {
+        const container = document.getElementById('styleTabs');
+        if (currentProfile === 'ALL' || currentProfile === 'LEAGUES' || !PROFILE_STYLES[currentProfile]) {
+            container.innerHTML = '';
+            return;
+        }
+        const styles = PROFILE_STYLES[currentProfile];
+        const active = currentStyles[currentProfile] || 'Complet';
+        let html = '<div class="style-tabs">';
+        html += `<div class="style-tab${active === 'Complet' ? ' active' : ''}" data-style="Complet">Complet</div>`;
+        for (const name of Object.keys(styles)) {
+            html += `<div class="style-tab${active === name ? ' active' : ''}" data-style="${name}">${name}</div>`;
+        }
+        html += '</div>';
+        container.innerHTML = html;
+        container.querySelectorAll('.style-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                currentStyles[currentProfile] = tab.dataset.style;
+                calculateAllScores();
+                renderStyleTabs();
+                applyFilters();
+            });
+        });
+    }
+
+    // ── Filtering ──
+    function applyFilters() {
+        const nameQ = document.getElementById('filterName').value.toLowerCase().trim();
+        const club = document.getElementById('filterClub').value;
+        const division = document.getElementById('filterDivision').value;
+        const ageMin = parseNum(document.getElementById('filterAgeMin').value) || 0;
+        const ageMax = parseNum(document.getElementById('filterAgeMax').value) || 99;
+        const minMin = parseNum(document.getElementById('filterMinutes').value) || 200;
+        const salaryMaxFilter = parseNum(document.getElementById('filterSalaryMax').value);  // 0 = no filter
+        const contractYearFilter = parseInt(document.getElementById('filterContractEnd').value) || 0; // 0 = no filter
+        const leagueMin = parseInt(document.getElementById('filterLeagueMin').value) || 0;
+        const scoreMin = parseNum(document.getElementById('filterScoreMin').value) || 0;
+
+        // Update filters inline hint
+        const activeFilters = [];
+        if (nameQ) activeFilters.push(`"${nameQ}"`);
+        if (club) activeFilters.push(club);
+        if (division) activeFilters.push(division);
+        if (ageMin > 0 || ageMax < 99) activeFilters.push(`${ageMin || '?'}-${ageMax < 99 ? ageMax : '?'} ans`);
+        if (salaryMaxFilter > 0) activeFilters.push(`≤${salaryMaxFilter}K€`);
+        if (contractYearFilter > 0) activeFilters.push(`Contrat ≤${contractYearFilter}`);
+        if (leagueMin > 0) activeFilters.push(`Ligue ≥${leagueMin}`);
+        if (scoreMin > 0) activeFilters.push(`Note ≥${scoreMin}`);
+        const filtersInline = document.getElementById('filtersInline');
+        if (filtersInline) filtersInline.textContent = activeFilters.length ? '— ' + activeFilters.join(', ') : '';
+
+        filteredPlayers = allPlayers.filter(p => {
+            if (nameQ && !p.name.toLowerCase().includes(nameQ)) return false;
+            if (club && p.club !== club) return false;
+            if (division && p.division !== division) return false;
+            if (p.age < ageMin || p.age > ageMax) return false;
+            if (p.minutes < minMin) return false;
+            if (salaryMaxFilter > 0 && p.salary_max > salaryMaxFilter * 1000) return false;
+            if (contractYearFilter > 0 && (!p.contractDate || p.contractDate.getFullYear() > contractYearFilter)) return false;
+            if (leagueMin > 0 && getLeagueStrength(p.division, p.country) < leagueMin) return false;
+            if (currentProfile !== 'ALL' && currentProfile !== 'LEAGUES' && !p.scores[currentProfile]) return false;
+            if (scoreMin > 0) {
+                if (currentProfile !== 'ALL' && currentProfile !== 'LEAGUES') {
+                    if (!p.scores[currentProfile] || p.scores[currentProfile].total < scoreMin) return false;
+                } else {
+                    if (p.bestScore < scoreMin) return false;
+                }
+            }
+            return true;
+        });
+
+        if (currentProfile === 'LEAGUES') {
+            renderTable();
+            return;
+        }
+        sortPlayers();
+        renderSummaryCards();
+        renderTable();
+    }
+
+    function sortPlayers() {
+        filteredPlayers.sort((a, b) => {
+            let va, vb;
+            switch (sortCol) {
+                case 'name': va = a.name; vb = b.name; break;
+                case 'age': va = a.age; vb = b.age; break;
+                case 'club': va = a.club; vb = b.club; break;
+                case 'division': va = a.division; vb = b.division; break;
+                case 'minutes': va = a.minutes; vb = b.minutes; break;
+                case 'salary': va = a.salary_max; vb = b.salary_max; break;
+                case 'score':
+                    if (currentProfile !== 'ALL') {
+                        va = a.scores[currentProfile]?.total ?? -1;
+                        vb = b.scores[currentProfile]?.total ?? -1;
+                    } else {
+                        va = a.bestScore; vb = b.bestScore;
+                    }
+                    break;
+                default:
+                    // Profile-specific score column
+                    va = a.scores[sortCol]?.total ?? -1;
+                    vb = b.scores[sortCol]?.total ?? -1;
+            }
+            if (typeof va === 'string') {
+                const cmp = va.localeCompare(vb);
+                return sortAsc ? cmp : -cmp;
+            }
+            return sortAsc ? va - vb : vb - va;
+        });
+    }
+
+    // ── Summary Cards ──
+    function renderSummaryCards() {
+        const minMin = parseNum(document.getElementById('filterMinutes').value) || 450;
+        const qualified = filteredPlayers.filter(p => p.minutes >= minMin);
+        const avgAge = qualified.length > 0 ? (qualified.reduce((s, p) => s + p.age, 0) / qualified.length).toFixed(1) : '-';
+        const topPlayer = filteredPlayers[0];
+        const topLabel = currentProfile !== 'ALL' ? currentProfile : (topPlayer?.bestProfile || '-');
+
+        // Inline summary (shown when collapsed)
+        document.getElementById('summaryInline').textContent =
+            `— ${filteredPlayers.length} joueurs` + (topPlayer ? ` · ${topPlayer.name}` : '');
+
+        document.getElementById('summaryCards').innerHTML = `
+            <div class="summary-card">
+                <div class="label"><i class="fas fa-users"></i> Joueurs affichés</div>
+                <div class="value accent">${filteredPlayers.length}</div>
+            </div>
+            <div class="summary-card">
+                <div class="label"><i class="fas fa-clock"></i> Âge moyen</div>
+                <div class="value">${avgAge}</div>
+            </div>
+            <div class="summary-card">
+                <div class="label"><i class="fas fa-star"></i> Meilleur joueur</div>
+                <div class="value" style="font-size:18px">${topPlayer ? topPlayer.name : '-'}</div>
+            </div>
+            <div class="summary-card">
+                <div class="label"><i class="fas fa-trophy"></i> Meilleure note</div>
+                <div class="value">${topPlayer ? scoreBadge(currentProfile !== 'ALL' ? topPlayer.scores[currentProfile]?.total : topPlayer.bestScore) + ' <small style="color:var(--text-secondary);font-size:12px">' + topLabel + '</small>' : '-'}</div>
+            </div>
+        `;
+    }
+
+    // ── Table Rendering ──
+    function renderTable() {
+        if (currentProfile === 'LEAGUES') { renderLeagueTable(); return; }
+        const thead = document.getElementById('tableHead');
+        const tbody = document.getElementById('tableBody');
+
+        // Build columns
+        const cols = [
+            { key: 'name', label: 'Joueur', width: '180px' },
+            { key: 'age', label: 'Âge', width: '50px' },
+            { key: 'club', label: 'Club', width: '140px' },
+            { key: 'division', label: 'Division', width: '150px' },
+            { key: 'minutes', label: 'Min', width: '65px' },
+        ];
+
+        if (currentProfile === 'ALL') {
+            cols.push({ key: 'salary', label: 'Salaire', width: '130px' });
+            cols.push({ key: 'score', label: 'Meilleure', width: '80px' });
+            for (const pk of PROFILE_ORDER) {
+                cols.push({ key: pk, label: pk, width: '55px' });
+            }
+        } else {
+            cols.push({ key: 'score', label: currentProfile, width: '70px' });
+        }
+
+        // Header
+        let headHTML = '<tr>';
+        for (const col of cols) {
+            const isSorted = sortCol === col.key;
+            const arrow = isSorted ? (sortAsc ? '▲' : '▼') : '';
+            headHTML += `<th data-col="${col.key}" style="width:${col.width}">${col.label} <span class="sort-icon">${arrow}</span></th>`;
+        }
+        headHTML += '</tr>';
+        thead.innerHTML = headHTML;
+
+        // Attach sort handlers
+        thead.querySelectorAll('th').forEach(th => {
+            th.addEventListener('click', () => {
+                const col = th.dataset.col;
+                if (sortCol === col) sortAsc = !sortAsc;
+                else { sortCol = col; sortAsc = (col === 'name' || col === 'club' || col === 'division'); }
+                sortPlayers();
+                renderTable();
+            });
+        });
+
+        // Paginated rows
+        const start = currentPage * PAGE_SIZE;
+        const pageData = filteredPlayers.slice(start, start + PAGE_SIZE);
+
+        let bodyHTML = '';
+        if (pageData.length === 0) {
+            bodyHTML = `<tr><td colspan="${cols.length}" style="text-align:center;padding:40px;color:var(--text-secondary)"><i class="fas fa-search" style="font-size:24px;margin-bottom:8px;display:block;opacity:.5"></i>Aucun joueur trouvé</td></tr>`;
+        }
+        for (const p of pageData) {
+            bodyHTML += `<tr data-idx="${p.idx}">`;
+            for (const col of cols) {
+                switch (col.key) {
+                    case 'name':
+                        bodyHTML += `<td class="name-cell">${escHTML(p.name)}</td>`;
+                        break;
+                    case 'age':
+                        bodyHTML += `<td>${p.age}</td>`;
+                        break;
+                    case 'club':
+                        bodyHTML += `<td>${escHTML(p.club)}</td>`;
+                        break;
+                    case 'division':
+                        const ls = getLeagueStrength(p.division, p.country);
+                        bodyHTML += `<td style="color:var(--text-secondary);font-size:12px">${escHTML(p.division)} <span class="league-str" title="Niveau ligue: ${ls}/20">${ls}</span></td>`;
+                        break;
+                    case 'minutes':
+                        bodyHTML += `<td>${p.minutes}</td>`;
+                        break;
+                    case 'salary':
+                        bodyHTML += `<td style="font-size:12px;color:var(--text-secondary)">${escHTML(p.salary)}</td>`;
+                        break;
+                    case 'score':
+                        if (currentProfile !== 'ALL') {
+                            bodyHTML += `<td>${scoreBadge(p.scores[currentProfile]?.total)}</td>`;
+                        } else {
+                            bodyHTML += `<td>${scoreBadge(p.bestScore)} <small style="color:var(--text-secondary);font-size:11px">${p.bestProfile || ''}</small></td>`;
+                        }
+                        break;
+                    default:
+                        // Profile column
+                        bodyHTML += `<td>${p.scores[col.key] ? scoreBadge(p.scores[col.key].total, true) : '<span style="color:var(--border)">—</span>'}</td>`;
+                }
+            }
+            bodyHTML += '</tr>';
+        }
+        tbody.innerHTML = bodyHTML;
+
+        // Row click → detail
+        tbody.querySelectorAll('tr[data-idx]').forEach(tr => {
+            tr.addEventListener('click', () => {
+                const idx = parseInt(tr.dataset.idx);
+                openDetail(allPlayers[idx]);
+            });
+        });
+
+        renderPagination();
+    }
+
+    function formatSalary(val) {
+        if (!val || val <= 0) return '—';
+        if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M €';
+        if (val >= 1000) return Math.round(val / 1000) + 'K €';
+        return Math.round(val) + ' €';
+    }
+
+    function renderLeagueTable() {
+        const thead = document.getElementById('tableHead');
+        const tbody = document.getElementById('tableBody');
+
+        const cols = [
+            { key: 'rank', label: '#', width: '40px' },
+            { key: 'country', label: 'Pays', width: '120px' },
+            { key: 'division', label: 'Division', width: '220px' },
+            { key: 'strength', label: 'Score', width: '70px' },
+            { key: 'factor', label: 'Facteur', width: '80px' },
+            { key: 'players', label: 'Joueurs', width: '80px' },
+            { key: 'reputation', label: 'Réputation', width: '130px' },
+        ];
+
+        // Header
+        let headHTML = '<tr>';
+        for (const col of cols) {
+            const isSorted = sortCol === col.key;
+            const arrow = isSorted ? (sortAsc ? '▲' : '▼') : '';
+            headHTML += `<th data-col="${col.key}" style="width:${col.width}">${col.label} <span class="sort-icon">${arrow}</span></th>`;
+        }
+        headHTML += '</tr>';
+        thead.innerHTML = headHTML;
+
+        // Sort league data
+        const data = [...leagueData].sort((a, b) => {
+            let va, vb;
+            switch (sortCol) {
+                case 'country': va = a.country; vb = b.country; break;
+                case 'division': va = a.division; vb = b.division; break;
+                case 'strength': va = a.strength; vb = b.strength; break;
+                case 'factor': va = a.factor; vb = b.factor; break;
+                case 'players': va = a.players; vb = b.players; break;
+                case 'reputation': va = a.reputation; vb = b.reputation; break;
+                default: va = a.strength; vb = b.strength;
+            }
+            if (typeof va === 'string') return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+            return sortAsc ? va - vb : vb - va;
+        });
+
+        // Rows
+        let bodyHTML = '';
+        data.forEach((lg, i) => {
+            const color = getScoreColorRaw(lg.strength * 5); // 0-20 → 0-100 scale for color
+            bodyHTML += `<tr>
+                <td style="color:var(--text-secondary)">${i + 1}</td>
+                <td>${escHTML(lg.country)}</td>
+                <td style="font-weight:600">${escHTML(lg.division)}</td>
+                <td><span class="league-str" style="font-size:13px;padding:2px 8px">${lg.strength}</span>/20</td>
+                <td style="color:var(--text-secondary)">×${lg.factor.toFixed(2)}</td>
+                <td>${lg.players}</td>
+                <td style="color:var(--text-secondary)">${escHTML(lg.reputation)}</td>
+            </tr>`;
+        });
+        tbody.innerHTML = bodyHTML;
+
+        // Sort handlers
+        thead.querySelectorAll('th').forEach(th => {
+            th.addEventListener('click', () => {
+                const col = th.dataset.col;
+                if (sortCol === col) sortAsc = !sortAsc;
+                else { sortCol = col; sortAsc = (col === 'division' || col === 'country'); }
+                renderLeagueTable();
+            });
+        });
+
+        // No pagination for leagues
+        document.getElementById('pagination').innerHTML =
+            `<span>${data.length} division${data.length > 1 ? 's' : ''}</span><span></span>`;
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(filteredPlayers.length / PAGE_SIZE);
+        const container = document.getElementById('pagination');
+        if (totalPages <= 1) {
+            container.innerHTML = `<span>${filteredPlayers.length} joueur${filteredPlayers.length > 1 ? 's' : ''}</span><span></span>`;
+            return;
+        }
+        const start = currentPage * PAGE_SIZE + 1;
+        const end = Math.min((currentPage + 1) * PAGE_SIZE, filteredPlayers.length);
+        let btns = '';
+        btns += `<button ${currentPage === 0 ? 'disabled' : ''} data-page="${currentPage - 1}"><i class="fas fa-chevron-left"></i></button>`;
+
+        // Show max 7 page buttons
+        const maxButtons = 7;
+        let startP = Math.max(0, currentPage - 3);
+        let endP = Math.min(totalPages, startP + maxButtons);
+        if (endP - startP < maxButtons) startP = Math.max(0, endP - maxButtons);
+
+        for (let i = startP; i < endP; i++) {
+            btns += `<button class="${i === currentPage ? 'active' : ''}" data-page="${i}">${i + 1}</button>`;
+        }
+        btns += `<button ${currentPage >= totalPages - 1 ? 'disabled' : ''} data-page="${currentPage + 1}"><i class="fas fa-chevron-right"></i></button>`;
+
+        container.innerHTML = `<span>${start}–${end} sur ${filteredPlayers.length}</span><div class="pagination-buttons">${btns}</div>`;
+
+        container.querySelectorAll('button[data-page]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentPage = parseInt(btn.dataset.page);
+                renderTable();
+                document.getElementById('mainTable').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    }
+
+    // ── Detail Panel ──
+    function openDetail(player) {
+        const panel = document.getElementById('detailPanel');
+        const backdrop = document.getElementById('backdrop');
+
+        document.getElementById('detailName').textContent = player.name;
+        document.getElementById('detailMeta').textContent = `${player.age} ans · ${player.club} · ${player.division}`;
+
+        // Info grid
+        const pLeagueStr = getLeagueStrength(player.division, player.country);
+        const pLeagueFact = leagueFactor(player.division, player.country);
+        document.getElementById('detailInfo').innerHTML = `
+            <div class="detail-info-item"><div class="info-label">Position</div><div class="info-value">${escHTML(player.position)}</div></div>
+            <div class="detail-info-item"><div class="info-label">Salaire</div><div class="info-value">${escHTML(player.salary)}</div></div>
+            <div class="detail-info-item"><div class="info-label">Contrat</div><div class="info-value">${escHTML(player.contractEnd)}</div></div>
+            <div class="detail-info-item"><div class="info-label">Minutes</div><div class="info-value">${player.minutes}</div></div>
+            <div class="detail-info-item"><div class="info-label">Note FM</div><div class="info-value">${player.stats[C.FM_RATING].toFixed(2)}</div></div>
+            <div class="detail-info-item"><div class="info-label">Niv. ligue</div><div class="info-value"><span class="league-str">${pLeagueStr}</span>/20 <small style="color:var(--text-secondary)">(×${pLeagueFact.toFixed(2)})</small></div></div>
+        `;
+
+        // Score cards — compute all style variants per profile
+        const detailStyleScores = {};  // { 'CB|Complet': {total, raw, components}, 'CB|Stoppeur': ... }
+        let scoresHTML = '';
+        for (const pk of PROFILE_ORDER) {
+            if (!player.scores[pk]) continue;
+            // Complet = current main score
+            const completWeights = PROFILES[pk].weights;
+            const completScore = scorePlayerForWeights(player, pk, completWeights) || player.scores[pk];
+            detailStyleScores[pk + '|Complet'] = completScore;
+            // Style variants
+            const styles = PROFILE_STYLES[pk];
+            if (styles) {
+                for (const [styleName, styleWeights] of Object.entries(styles)) {
+                    const ws = styleWeights.map(w => ({ ...w, label: STAT_CATALOG[w.key]?.label || w.key }));
+                    const sc = scorePlayerForWeights(player, pk, ws);
+                    if (sc) detailStyleScores[pk + '|' + styleName] = sc;
+                }
+            }
+        }
+
+        // Find best variant for default selection
+        const selProf = selectedDetailProfile || player.bestProfile;
+        const selStyle = selectedDetailStyle || 'Complet';
+        const selKey = selProf + '|' + selStyle;
+
+        for (const pk of PROFILE_ORDER) {
+            if (!player.scores[pk]) continue;
+            const styles = PROFILE_STYLES[pk] || {};
+            const allStyles = ['Complet', ...Object.keys(styles)];
+            scoresHTML += `<div class="detail-score-group" data-profile="${pk}">`;
+            scoresHTML += `<div class="detail-score-group-label">${pk}</div><div class="detail-score-group-items">`;
+            for (const sn of allStyles) {
+                const key = pk + '|' + sn;
+                const data = detailStyleScores[key];
+                if (!data) continue;
+                const sc = data.total;
+                const color = getScoreColorRaw(sc);
+                const active = (key === selKey) ? ' active' : '';
+                scoresHTML += `<div class="detail-score-card${active}" data-profile="${pk}" data-style="${sn}" title="${sn} (brut: ${data.raw})">
+                    <div class="profile-label">${sn === 'Complet' ? '●' : sn}</div>
+                    <div class="profile-score" style="color:${color}">${sc}</div>
+                </div>`;
+            }
+            scoresHTML += `</div></div>`;
+        }
+        document.getElementById('detailScores').innerHTML = scoresHTML;
+
+        // Score card click → switch radar with that style's weights
+        document.querySelectorAll('.detail-score-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.detail-score-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                const pk = card.dataset.profile;
+                const sn = card.dataset.style;
+                selectedDetailProfile = pk;
+                selectedDetailStyle = sn;
+                // Temporarily swap scores so radar reads the right components
+                const key = pk + '|' + sn;
+                const savedScores = player.scores[pk];
+                player.scores[pk] = detailStyleScores[key] || savedScores;
+                // Temporarily set currentStyles for radar label
+                const savedStyle = currentStyles[pk];
+                currentStyles[pk] = sn;
+                renderRadar(player, pk);
+                currentStyles[pk] = savedStyle;
+                player.scores[pk] = savedScores;
+            });
+        });
+
+        // Radar chart — initial render
+        const defaultProfile = selectedDetailProfile && player.scores[selectedDetailProfile] ? selectedDetailProfile : player.bestProfile;
+        const defaultStyle = selectedDetailStyle || 'Complet';
+        selectedDetailProfile = defaultProfile;
+        selectedDetailStyle = defaultStyle;
+        {
+            const key = defaultProfile + '|' + defaultStyle;
+            const savedScores = player.scores[defaultProfile];
+            player.scores[defaultProfile] = detailStyleScores[key] || savedScores;
+            const savedStyle = currentStyles[defaultProfile];
+            currentStyles[defaultProfile] = defaultStyle;
+            renderRadar(player, defaultProfile);
+            currentStyles[defaultProfile] = savedStyle;
+            player.scores[defaultProfile] = savedScores;
+        }
+
+        // Detailed stats
+        renderDetailStats(player);
+
+        panel.classList.add('open');
+        backdrop.classList.add('open');
+    }
+
+    function closeDetail() {
+        document.getElementById('detailPanel').classList.remove('open');
+        document.getElementById('backdrop').classList.remove('open');
+        selectedDetailProfile = null;
+    }
+
+    function getScoreColorRaw(score) {
+        const isDark = getTheme() === 'dark';
+        if (isDark) {
+            if (score >= 90) return '#ffd700'; if (score >= 80) return '#22c55e';
+            if (score >= 70) return '#86efac'; if (score >= 60) return '#a3e635';
+            if (score >= 50) return '#eab308'; if (score >= 40) return '#f97316';
+            if (score >= 30) return '#ea580c'; return '#ef4444';
+        }
+        if (score >= 90) return '#b8860b'; if (score >= 80) return '#1a7f37';
+        if (score >= 70) return '#2da44e'; if (score >= 60) return '#4d7c0f';
+        if (score >= 50) return '#9a6700'; if (score >= 40) return '#bc4c00';
+        if (score >= 30) return '#cf222e'; return '#a40e26';
+    }
+
+    function renderRadar(player, profileKey) {
+        const profDef = PROFILES[profileKey];
+        const scores = player.scores[profileKey];
+        if (!profDef || !scores) return;
+
+        const activeWeights = getActiveWeights(profileKey);
+        const styleName = currentStyles[profileKey] || 'Complet';
+        const label = styleName === 'Complet' ? profDef.label : styleName;
+        document.getElementById('radarProfileLabel').textContent = profileKey + ' — ' + label;
+
+        const topWeights = [...activeWeights].sort((a, b) => b.w - a.w).slice(0, 7);
+        const labels = topWeights.map(w => w.label);
+        const data = topWeights.map(w => scores.components[w.key] || 0);
+        const color = getScoreColorRaw(scores.total);
+
+        if (radarChart) radarChart.destroy();
+
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        const isDark = getTheme() === 'dark';
+        const gridColor = isDark ? '#30363d' : '#d0d7de';
+        const textColor = isDark ? '#e6edf3' : '#1f2328';
+        const tickColor = isDark ? '#8b949e' : '#656d76';
+
+        radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels,
+                datasets: [{
+                    data,
+                    backgroundColor: color + '33',
+                    borderColor: color,
+                    borderWidth: 2,
+                    pointBackgroundColor: color,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    r: {
+                        min: 0, max: 100,
+                        ticks: { stepSize: 25, color: tickColor, backdropColor: 'transparent', font: { size: 10 } },
+                        grid: { color: gridColor },
+                        angleLines: { color: gridColor },
+                        pointLabels: { color: textColor, font: { size: 11, family: 'Inter' } },
+                    }
+                }
+            }
+        });
+    }
+
+    function renderDetailStats(player) {
+        const statsMap = [
+            // GK
+            ['Encaissé /90', player.stats[C.GOALS_CONCEDED]],
+            ['Arrêts /90', player.stats[C.SAVES]],
+            ['xG évités /90', player.stats[C.XG_PREVENTED]],
+            ['% arrêts', player.stats[C.SAVE_PCT]],
+            // Defensive
+            ['Dég /90', player.stats[C.CLEARANCES]],
+            ['Blocks /90', player.stats[C.BLOCKS]],
+            ['Int /90', player.stats[C.INTERCEPTIONS]],
+            ['Tackles /90', player.stats[C.TACKLES]],
+            ['Tcl décisifs /90', player.stats[C.DEF_TACKLES]],
+            // Recovery
+            ['Poss récup /90', player.stats[C.POSS_RECOV]],
+            ['Poss perd /90', player.stats[C.POSS_LOST]],
+            // Pressing
+            ['Pressing tenté /90', player.stats[C.PRESS_T]],
+            ['Pressing réussi /90', player.stats[C.PRESSING]],
+            // Aerial
+            ['Aériens tentés /90', player.stats[C.AERIAL]],
+            ['Aériens gagnés /90', player.stats[C.AERIAL_WON]],
+            // Passing
+            ['Passes tent. /90', player.stats[C.PASSES_TOTAL]],
+            ['Passes réussies /90', player.stats[C.PASSES_SUCC]],
+            ['% passes', player.stats[C.PASS_PCT]],
+            ['Passes prog /90', player.stats[C.PASSES_PROG]],
+            // Creativity
+            ['Passes clés /90', player.stats[C.KEY_PASSES]],
+            ['xA (PdA) /90', player.stats[C.XA]],
+            ['Occasions créées /90', player.stats[C.CHANCES]],
+            // Crossing
+            ['Centres tent. /90', player.stats[C.CROSSES_ATT]],
+            ['Centres réussis /90', player.stats[C.CROSSES_WON]],
+            // Dribble / Shot / Physical
+            ['Dribbles /90', player.stats[C.DRIBBLES]],
+            ['Tirs /90', player.stats[C.SHOTS]],
+            ['% cadrés', player.stats[C.SHOTS_OT_PCT]],
+            ['xG /90', player.stats[C.XG_NP]],
+            ['Buts /90', player.stats[C.GOALS_P90]],
+            ['Distance /90', player.stats[C.DISTANCE]],
+            ['Sprints /90', player.stats[C.SPRINTS]],
+        ];
+
+        let html = '';
+        for (const [label, val] of statsMap) {
+            html += `<div class="detail-stat-row"><span class="stat-name">${label}</span><span class="stat-value">${typeof val === 'number' ? val.toFixed(2) : val}</span></div>`;
+        }
+        document.getElementById('detailStats').innerHTML = html;
+    }
+
+    function escHTML(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    // ── Settings Modal ──
+    let settingsProfile = 'GK';
+    let settingsDraft = {}; // temporary weights being edited
+
+    function openSettings() {
+        // Clone current profiles into draft
+        settingsDraft = {};
+        for (const pk of PROFILE_ORDER)
+            settingsDraft[pk] = PROFILES[pk].weights.map(w => ({ key: w.key, w: w.w }));
+        settingsProfile = 'GK';
+        renderSettingsTabs();
+        renderSettingsBody();
+        document.getElementById('settingsModal').classList.add('open');
+    }
+
+    function closeSettings() {
+        document.getElementById('settingsModal').classList.remove('open');
+    }
+
+    function renderSettingsTabs() {
+        const container = document.getElementById('settingsTabs');
+        container.innerHTML = PROFILE_ORDER.map(pk =>
+            `<div class="modal-tab${pk === settingsProfile ? ' active' : ''}" data-p="${pk}">${pk}</div>`
+        ).join('');
+        container.querySelectorAll('.modal-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                settingsProfile = tab.dataset.p;
+                renderSettingsTabs();
+                renderSettingsBody();
+            });
+        });
+    }
+
+    function renderSettingsBody() {
+        const body = document.getElementById('settingsBody');
+        const weights = settingsDraft[settingsProfile];
+        const total = weights.reduce((s, w) => s + w.w, 0);
+        const usedKeys = new Set(weights.map(w => w.key));
+        const unusedStats = Object.entries(STAT_CATALOG).filter(([k]) => !usedKeys.has(k));
+
+        let html = '';
+        weights.forEach((w, i) => {
+            const cat = STAT_CATALOG[w.key];
+            const inv = INVERTED_STATS.has(w.key) ? ' <span class="stat-inv">INV</span>' : '';
+            html += `<div class="modal-stat-row${w.w === 0 ? ' inactive' : ''}">
+                <span class="stat-label">${cat?.label || w.key}${inv}</span>
+                <input type="number" min="0" max="100" value="${w.w}" data-idx="${i}">
+                <button class="btn-danger" style="padding:2px 6px;font-size:11px;min-width:0" data-rm="${i}" title="Retirer">&times;</button>
+            </div>`;
+        });
+
+        const totalClass = total === 100 ? 'ok' : 'warn';
+        html += `<div class="modal-total ${totalClass}">Total : ${total} / 100${total !== 100 ? ' ⚠' : ' ✓'}</div>`;
+
+        if (unusedStats.length > 0) {
+            html += `<div class="modal-stat-add">
+                <select id="settingsAddStat">
+                    <option value="">+ Ajouter une stat...</option>
+                    ${unusedStats.map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('')}
+                </select>
+                <button id="settingsAddBtn">Ajouter</button>
+            </div>`;
+        }
+
+        body.innerHTML = html;
+
+        // Weight change handlers
+        body.querySelectorAll('input[data-idx]').forEach(input => {
+            input.addEventListener('input', () => {
+                const idx = parseInt(input.dataset.idx);
+                weights[idx].w = parseInt(input.value) || 0;
+                // Re-render to update total
+                renderSettingsBody();
+            });
+        });
+
+        // Remove handlers
+        body.querySelectorAll('[data-rm]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                weights.splice(parseInt(btn.dataset.rm), 1);
+                renderSettingsBody();
+            });
+        });
+
+        // Add stat handler
+        const addBtn = document.getElementById('settingsAddBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                const sel = document.getElementById('settingsAddStat');
+                if (sel.value) {
+                    weights.push({ key: sel.value, w: 0 });
+                    renderSettingsBody();
+                }
+            });
+        }
+    }
+
+    function applySettings() {
+        for (const pk of PROFILE_ORDER) {
+            PROFILES[pk].weights = settingsDraft[pk]
+                .filter(w => w.w > 0)
+                .map(w => ({ key: w.key, w: w.w, label: STAT_CATALOG[w.key]?.label || w.key }));
+        }
+        saveProfiles();
+        closeSettings();
+        if (allPlayers.length) {
+            calculateAllScores();
+            applyFilters();
+        }
+    }
+
+    function resetSettings() {
+        PROFILES = cloneProfiles(DEFAULT_PROFILES);
+        localStorage.removeItem('fm26-profiles');
+        closeSettings();
+        if (allPlayers.length) {
+            calculateAllScores();
+            applyFilters();
+        }
+    }
+
+    // ── Theme Toggle ──
+    function getTheme() { return document.documentElement.getAttribute('data-theme') || 'dark'; }
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        const icon = document.querySelector('#themeToggle i');
+        icon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        localStorage.setItem('fm26-theme', theme);
+        // Update radar chart colors if active
+        if (radarChart) {
+            const gridColor = theme === 'dark' ? '#30363d' : '#d0d7de';
+            const textColor = theme === 'dark' ? '#e6edf3' : '#1f2328';
+            const tickColor = theme === 'dark' ? '#8b949e' : '#656d76';
+            radarChart.options.scales.r.grid.color = gridColor;
+            radarChart.options.scales.r.angleLines.color = gridColor;
+            radarChart.options.scales.r.pointLabels.color = textColor;
+            radarChart.options.scales.r.ticks.color = tickColor;
+            radarChart.update();
+        }
+    }
+
+    // ── Collapsible Sections ──
+    function makeCollapsible(toggleId, bodyId, chevronId, startCollapsed) {
+        let collapsed = startCollapsed;
+        document.getElementById(toggleId).addEventListener('click', () => {
+            collapsed = !collapsed;
+            document.getElementById(bodyId).classList.toggle('collapsed', collapsed);
+            document.getElementById(chevronId).classList.toggle('collapsed', collapsed);
+        });
+    }
+
+    // ── Event Listeners ──
+    document.addEventListener('DOMContentLoaded', () => {
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        // Restore theme
+        const saved = localStorage.getItem('fm26-theme');
+        if (saved) setTheme(saved);
+
+        // Theme toggle
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            setTheme(getTheme() === 'dark' ? 'light' : 'dark');
+            if (allPlayers.length) { renderSummaryCards(); renderTable(); }
+        });
+
+        // Collapsible sections
+        makeCollapsible('summaryToggle', 'summaryWrap', 'summaryChevron', true);
+        makeCollapsible('filtersToggle', 'filtersWrap', 'filtersChevron', false);
+
+        // Settings modal
+        document.getElementById('settingsBtn').addEventListener('click', openSettings);
+        document.getElementById('settingsClose').addEventListener('click', closeSettings);
+        document.getElementById('settingsCancel').addEventListener('click', closeSettings);
+        document.getElementById('settingsApply').addEventListener('click', applySettings);
+        document.getElementById('settingsReset').addEventListener('click', resetSettings);
+        document.getElementById('settingsModal').addEventListener('click', e => {
+            if (e.target === e.currentTarget) closeSettings();
+        });
+
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.csv')) loadCSV(file);
+            else alert('Veuillez déposer un fichier .csv');
+        });
+        fileInput.addEventListener('change', e => {
+            if (e.target.files[0]) loadCSV(e.target.files[0]);
+        });
+
+        // Filters
+        ['filterName', 'filterClub', 'filterDivision', 'filterAgeMin', 'filterAgeMax', 'filterSalaryMax', 'filterContractEnd', 'filterLeagueMin', 'filterScoreMin'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => { currentPage = 0; applyFilters(); });
+        });
+        document.getElementById('filterMinutes').addEventListener('change', () => {
+            calculateAllScores();
+            currentPage = 0;
+            applyFilters();
+        });
+
+        // Detail panel
+        document.getElementById('closeDetail').addEventListener('click', closeDetail);
+        document.getElementById('backdrop').addEventListener('click', closeDetail);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+    });
+    </script>
+</body>
+</html>
