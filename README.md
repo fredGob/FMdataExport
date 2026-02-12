@@ -1,107 +1,37 @@
-# FM Data Export - BepInEx Plugin for Football Manager 26
+# FM26 Scout Tools
 
-Plugin BepInEx qui permet d'exporter les donnees des tableaux de Football Manager 26 en fichiers CSV.
+Outils de scouting pour Football Manager 2026 : extraction des données du jeu et analyse dans un dashboard interactif.
 
-## Fonctionnalites
+## Structure du projet
 
-- **F10** : Exporte les donnees du tableau actif (equipe, recherche de joueurs, etc.) en CSV
-- **F9** : Dump l'arbre UI dans le log BepInEx (diagnostic)
-- Export progressif avec scroll automatique pour les grands tableaux (ex: 36 000 joueurs)
-- Nettoyage automatique du rich text (balises `<color>`, `<link>`, `<style>`)
-- Detection intelligente du chargement des donnees (attend que le contenu soit stable avant de lire)
+Le projet est composé de deux parties indépendantes :
 
-## Prerequis
+### [DataExport](DataExport/)
 
-Aller sur https://builds.bepinex.dev/projects/bepinex_be
+Plugin BepInEx qui s'injecte dans FM26 pour exporter les données des tableaux en fichiers CSV. Appuyer sur **F10** en jeu pour lancer l'export.
 
-Décendre un peu sur la page et cliquer sur le build le plus récent (#753 chez moi).
+- Plugin C# (.dll) pour BepInEx
+- Export progressif avec scroll automatique pour les grands tableaux (36 000+ joueurs)
+- Nettoyage automatique du rich text
 
-Et télécharger la version BepInEx-Unity.IL2CPP-win-x64*
-Soit la version 64 bits de Windows avec prise IL2CPP.
+### [DataAnalyser](DataAnalyser/)
 
-Dézipper le fichier téléchargé.
+Dashboard web 100% client-side pour analyser les joueurs exportés. Ouvrir `index.html` dans un navigateur et importer le CSV.
 
+- 8 profils de poste (GK, CB, FB, DM, CM, AM, WG, ST) avec styles de jeu spécialisés
+- Notation percentile pondérée avec prise en compte de la force des ligues
+- Filtres avancés, tri, pagination, radar charts, panneau détail
 
-Aller dans le dossier d'installation FM26
-
-**Astuce** : Sur Steam, clic droit sur FM26, aller dans Propriétés, puis Fichiers Installés, puis Parcourir.
-Puis copier/coller les fichier dézippé précédemment.
-
-Vous devez avoir une architecture
-
-'''
-.../.local/share/Steam/steamapps/common/Football Manager 26/
-
-BepInEx
-changelog.txt
-[...]
-fm.exe
-fm_data
-[...]
-dotnert
-libdoorstop.so
-run_bepinex.sh
-'''
-
-**IMPORTANT**: Sur linux, Ajouter dans les options de lancement Steam de FM26 :
-   ```
-   WINEDLLOVERRIDES="winhttp=n,b" %command%
-   ```
-   (Clic droit sur FM26 dans Steam > Proprietes > Options de lancement)
-
-
-## Lancer le jeu UNE FOIS pour que BepInEx initialise et cree le dossier `BepInEx/plugins/`
-Verifier que ca marche: le dossier `BepInEx/plugins/` doit exister apres le premier lancement
-
-## Installation du plugin
-
-Copier `FMDataExport.dll` dans le dossier plugins de BepInEx :
+## Workflow
 
 ```
-~/.local/share/Steam/steamapps/common/Football Manager 26/BepInEx/plugins/
+FM26 (en jeu)          DataExport             DataAnalyser
++--------------+      +-------------+      +----------------+
+| Tableau de   | F10  | Export CSV   | -->  | Import CSV     |
+| joueurs      |----->| automatique  |      | + Analyse      |
++--------------+      +-------------+      +----------------+
 ```
 
-## Utilisation
-
-### Exporter des donnees (F10)
-
-1. Ouvrir n'importe quelle vue avec un tableau dans FM26 (equipe, recherche de joueurs, classement, etc.)
-2. Configurer les colonnes souhaitees dans le jeu
-3. Appuyer sur **F10**
-4. Pour les petits tableaux : export instantane
-5. Pour les grands tableaux (recherche de joueurs) : le tableau defilera automatiquement. Attendre la fin du scroll.
-
-Le fichier CSV est enregistre dans :
-```
-Documents/Sports Interactive/Football Manager 26/exports/
-```
-
-> Sous Linux/Proton, le chemin reel est :
-> ```
-> ~/.local/share/Steam/steamapps/compatdata/<app_id>/pfx/drive_c/users/steamuser/Documents/Sports Interactive/Football Manager 26/exports/
-> ```
-
-
-
-# Dans FM26
-Récupérer le fichier STATS.fmf
-
-coller le fichier ici :
-/home/fred/.local/share/Steam/steamapps/compatdata/3551340/pfx/drive_c/users/steamuser/Documents/Sports Interactive/Football Manager 26/views
-
-
-
-Dans le menu Recrutement -> Base de donnée joueurs
-Le but ici est d'afficher TOUS les joueurs de la base.
-
-Changer le réseau et sélectionner Monde (optionnel)
-Supprimer tous les filtres, sélectionner Interêt = pas envisagé
-Modifier la recherche, décocher Exclure : votre équipe
-Ajouter un filtre de temps de jeu minimum à 0 minutes (Ajouter condition -> Stats (générales) -> Général -> Minutes).
-
-
-Charger la vue STATS 
-Clic droit sur une colonne -> Importation de l'affichage -> Importer STATS
-
-Aller chercher le fichier généré
-Importer ensuite le fichier csv dans l'outil html.
+1. Configurer la vue dans FM26 (voir [DataAnalyser/README](DataAnalyser/) pour la vue recommandée)
+2. Appuyer sur **F10** pour exporter en CSV via le plugin
+3. Ouvrir le dashboard et importer le fichier CSV
