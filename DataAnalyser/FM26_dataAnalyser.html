@@ -242,6 +242,23 @@
         /* League Strength badge */
         .league-str { display: inline-block; font-size: 10px; font-weight: 600; padding: 0 4px; border-radius: 3px;
             background: var(--bg-primary); border: 1px solid var(--border); color: var(--accent); vertical-align: middle; margin-left: 2px; }
+
+        /* Shortlist buttons */
+        .shortlist-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-secondary);
+            padding: 2px 4px; line-height: 1; transition: color .15s; opacity: .5; }
+        .shortlist-btn:hover { color: #eab308; opacity: 1; }
+        .shortlist-btn.active { color: #eab308; opacity: 1; }
+        .shortlist-remove { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--text-secondary);
+            padding: 2px 6px; line-height: 1; transition: color .15s; border-radius: 4px; }
+        .shortlist-remove:hover { color: var(--score-vpoor); background: rgba(239,68,68,.1); }
+        .export-btn { background: var(--accent); border: none; color: #0d1117; border-radius: 6px;
+            padding: 5px 14px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit;
+            display: flex; align-items: center; gap: 6px; transition: opacity .15s; }
+        .export-btn:hover { opacity: .85; }
+        .detail-shortlist-btn { background: none; border: none; cursor: pointer; font-size: 20px; color: var(--text-secondary);
+            padding: 2px 6px; transition: color .15s; }
+        .detail-shortlist-btn:hover { color: #eab308; }
+        .detail-shortlist-btn.active { color: #eab308; }
     </style>
 </head>
 <body>
@@ -354,7 +371,10 @@
                     <div class="detail-player-name" id="detailName"></div>
                     <div class="detail-meta" id="detailMeta"></div>
                 </div>
-                <button class="close-btn" id="closeDetail"><i class="fas fa-times"></i></button>
+                <div style="display:flex;align-items:center;gap:4px">
+                    <button class="detail-shortlist-btn" id="detailShortlistBtn" title="Ajouter/retirer de la shortlist"><i class="far fa-star"></i></button>
+                    <button class="close-btn" id="closeDetail"><i class="fas fa-times"></i></button>
+                </div>
             </div>
             <div class="detail-scores" id="detailScores"></div>
         </div>
@@ -542,32 +562,32 @@
             'Excentré': [{ key: 'fm_rating', w: 10 }, { key: 'pass_pct', w: 20 }, { key: 'passes_prog', w: 15 }, { key: 'poss_recov', w: 15 }, { key: 'aerial_won', w: 15 }, { key: 'distance', w: 15 }, { key: 'dribbles', w: 10 }],
         },
         FB: {
-            'Défensif':  [{ key: 'tackles', w: 18 }, { key: 'interceptions', w: 15 }, { key: 'pressing', w: 15 }, { key: 'poss_recov', w: 12 }, { key: 'def_tackles', w: 12 }, { key: 'distance', w: 10 }, { key: 'pass_pct', w: 10 }, { key: 'sprints', w: 8 }],
-            Offensif:  [{ key: 'crosses', w: 15 }, { key: 'key_passes', w: 15 }, { key: 'passes_prog', w: 15 }, { key: 'dribbles', w: 12 }, { key: 'sprints', w: 12 }, { key: 'xa', w: 10 }, { key: 'distance', w: 10 }, { key: 'crosses_won', w: 11 }],
-            'Intérieur':  [{ key: 'crosses', w: 15 }, { key: 'key_passes', w: 15 }, { key: 'passes_prog', w: 15 }, { key: 'dribbles', w: 12 }, { key: 'sprints', w: 12 }, { key: 'xa', w: 10 }, { key: 'distance', w: 10 }, { key: 'crosses_won', w: 11 }],
+            'Défensif':  [{ key: 'fm_rating', w: 10 }, { key: 'tackles', w: 20 }, { key: 'interceptions', w: 20 }, { key: 'distance', w: 15 }, { key: 'sprints', w: 10 }, { key: 'pressing', w: 10 }, { key: 'poss_recov', w: 15 }],
+            'Offensif':  [{ key: 'fm_rating', w: 10 }, { key: 'poss_recov', w: 20 }, { key: 'crosses_won', w: 20 }, { key: 'distance', w: 10 }, { key: 'sprints', w: 15 }, { key: 'key_passes', w: 10 }, { key: 'passes_prog', w: 15 }],
+            'Intérieur':  [{ key: 'fm_rating', w: 10 }, { key: 'poss_recov', w: 20 }, { key: 'xa', w: 20 }, { key: 'distance', w: 10 }, { key: 'sprints', w: 10 }, { key: 'key_passes', w: 15 }, { key: 'passes_prog', w: 15 }],
         },
         DM: {
-            Sentinelle:[{ key: 'interceptions', w: 20 }, { key: 'def_tackles', w: 15 }, { key: 'tackles', w: 15 }, { key: 'blocks', w: 15 }, { key: 'poss_recov', w: 15 }, { key: 'aerial_won', w: 10 }, { key: 'pass_pct', w: 10 }],
-            Meneur:  [{ key: 'passes_prog', w: 18 }, { key: 'distance', w: 15 }, { key: 'pressing', w: 15 }, { key: 'passes_total', w: 12 }, { key: 'poss_recov', w: 10 }, { key: 'tackles', w: 10 }, { key: 'sprints', w: 10 }, { key: 'interceptions', w: 10 }],
+            Sentinelle:[{ key: 'fm_rating', w: 10 }, { key: 'tackles', w: 15 }, { key: 'interceptions', w: 15 }, { key: 'blocks', w: 15 }, { key: 'poss_recov', w: 20 }, { key: 'aerial_won', w: 10 }, { key: 'pass_pct', w: 15 }],
+            Meneur:[{ key: 'fm_rating', w: 10 }, { key: 'interceptions', w: 15 }, { key: 'poss_recov', w: 15 }, { key: 'pressing', w: 10 }, { key: 'passes_prog', w: 20 }, { key: 'pass_pct', w: 15 }, { key: 'key_passes', w: 15 }],
         },
         CM: {
-            Organisateur:[{ key: 'passes_prog', w: 18 }, { key: 'pass_pct', w: 15 }, { key: 'key_passes', w: 15 }, { key: 'passes_total', w: 15 }, { key: 'xa', w: 12 }, { key: 'chances', w: 10 }, { key: 'poss_lost', w: 10 }, { key: 'fm_rating', w: 5 }],
-            'Box-to-Box':[{ key: 'distance', w: 15 }, { key: 'pressing', w: 15 }, { key: 'tackles', w: 12 }, { key: 'sprints', w: 12 }, { key: 'poss_recov', w: 12 }, { key: 'passes_prog', w: 10 }, { key: 'interceptions', w: 10 }, { key: 'def_tackles', w: 7 }, { key: 'aerial_won', w: 7 }],
-            'Récupérateur':[{ key: 'distance', w: 15 }, { key: 'pressing', w: 15 }, { key: 'tackles', w: 12 }, { key: 'sprints', w: 12 }, { key: 'poss_recov', w: 12 }, { key: 'passes_prog', w: 10 }, { key: 'interceptions', w: 10 }, { key: 'def_tackles', w: 7 }, { key: 'aerial_won', w: 7 }],
+            Organisateur:[{ key: 'fm_rating', w: 10 }, { key: 'pressing', w: 10 }, { key: 'poss_recov', w: 10 }, { key: 'poss_lost', w: 10 }, { key: 'passes_prog', w: 20 }, { key: 'pass_pct', w: 20 }, { key: 'key_passes', w: 20 }],
+            'Box-to-Box':[{ key: 'fm_rating', w: 10 }, { key: 'pressing', w: 15 }, { key: 'poss_recov', w: 15 }, { key: 'distance', w: 20 }, { key: 'sprints', w: 15 }, { key: 'pass_pct', w: 15 }, { key: 'key_passes', w: 10 }],
+            'Récupérateur':[{ key: 'fm_rating', w: 10 }, { key: 'pressing', w: 20 }, { key: 'poss_recov', w: 20 }, { key: 'distance', w: 10 }, { key: 'tackles', w: 15 }, { key: 'pass_pct', w: 15 }, { key: 'passes_prog', w: 10 }],
         },
         AM: {
-            'Créateur':  [{ key: 'key_passes', w: 20 }, { key: 'xa', w: 20 }, { key: 'chances', w: 15 }, { key: 'passes_prog', w: 12 }, { key: 'dribbles', w: 10 }, { key: 'pass_pct', w: 8 }, { key: 'poss_lost', w: 8 }, { key: 'passes_total', w: 7 }],
-            Attaquant: [{ key: 'goals_p90', w: 20 }, { key: 'xg', w: 20 }, { key: 'shots', w: 15 }, { key: 'shots_ot_pct', w: 12 }, { key: 'dribbles', w: 10 }, { key: 'key_passes', w: 8 }, { key: 'sprints', w: 8 }, { key: 'pressing', w: 7 }],
+            'Créateur':  [{ key: 'fm_rating', w: 10 }, { key: 'chances', w: 20 }, { key: 'xa', w: 20 }, { key: 'key_passes', w: 20 }, { key: 'pass_pct', w: 10 }, { key: 'passes_prog', w: 10 }, { key: 'dribbles', w: 10 }],
+            Attaquant:  [{ key: 'fm_rating', w: 10 }, { key: 'xa', w: 15 }, { key: 'goals_p90', w: 20 }, { key: 'xg', w: 20 }, { key: 'dribbles', w: 10 }, { key: 'key_passes', w: 10 }, { key: 'sprints', w: 15 }],
         },
         WG: {
-            Dribbleur: [{ key: 'dribbles', w: 20 }, { key: 'sprints', w: 15 }, { key: 'xg', w: 15 }, { key: 'goals_p90', w: 15 }, { key: 'shots', w: 10 }, { key: 'distance', w: 10 }, { key: 'key_passes', w: 8 }, { key: 'pressing', w: 7 }],
-            'Créateur':   [{ key: 'crosses', w: 18 }, { key: 'xa', w: 18 }, { key: 'key_passes', w: 15 }, { key: 'crosses_won', w: 12 }, { key: 'passes_prog', w: 12 }, { key: 'chances', w: 10 }, { key: 'dribbles', w: 8 }, { key: 'pass_pct', w: 7 }],
-            'Attaquant':   [{ key: 'crosses', w: 18 }, { key: 'xa', w: 18 }, { key: 'key_passes', w: 15 }, { key: 'crosses_won', w: 12 }, { key: 'passes_prog', w: 12 }, { key: 'chances', w: 10 }, { key: 'dribbles', w: 8 }, { key: 'pass_pct', w: 7 }],
+            Dribbleur: [{ key: 'fm_rating', w: 10 }, { key: 'key_passes', w: 15 }, { key: 'xa', w: 15 }, { key: 'dribbles', w: 20 }, { key: 'sprints', w: 15 }, { key: 'crosses', w: 10 }, { key: 'crosses_won', w: 15 }],
+            'Créateur': [{ key: 'fm_rating', w: 10 }, { key: 'key_passes', w: 15 }, { key: 'xa', w: 20 }, { key: 'dribbles', w: 10 }, { key: 'pass_pct', w: 15 }, { key: 'chances', w: 20 }, { key: 'crosses_won', w: 10 }],
+            'Attaquant': [{ key: 'fm_rating', w: 10 }, { key: 'key_passes', w: 10 }, { key: 'xa', w: 10 }, { key: 'goals_p90', w: 20 }, { key: 'sprints', w: 10 }, { key: 'xg', w: 10 }, { key: 'shots_ot_pct', w: 10 }],
         },
         ST: {
-            Finisseur: [{ key: 'goals_p90', w: 25 }, { key: 'xg', w: 22 }, { key: 'shots_ot_pct', w: 15 }, { key: 'shots', w: 13 }, { key: 'dribbles', w: 10 }, { key: 'sprints', w: 8 }, { key: 'pressing', w: 7 }],
-            Pivot:     [{ key: 'aerial_won', w: 18 }, { key: 'aerial', w: 12 }, { key: 'key_passes', w: 15 }, { key: 'pressing', w: 15 }, { key: 'xa', w: 12 }, { key: 'goals_p90', w: 10 }, { key: 'xg', w: 10 }, { key: 'poss_recov', w: 8 }],
-            'Créateur':     [{ key: 'aerial_won', w: 18 }, { key: 'aerial', w: 12 }, { key: 'key_passes', w: 15 }, { key: 'pressing', w: 15 }, { key: 'xa', w: 12 }, { key: 'goals_p90', w: 10 }, { key: 'xg', w: 10 }, { key: 'poss_recov', w: 8 }],
+            Finisseur: [{ key: 'fm_rating', w: 10 }, { key: 'goals_p90', w: 30 }, { key: 'xg', w: 15 }, { key: 'shots_ot_pct', w: 10 }, { key: 'xa', w: 10 }, { key: 'sprints', w: 15 }, { key: 'dribbles', w: 10 }],
+            Pivot: [{ key: 'fm_rating', w: 10 }, { key: 'goals_p90', w: 25 }, { key: 'xg', w: 10 }, { key: 'aerial_won', w: 20 }, { key: 'xa', w: 10 }, { key: 'pressing', w: 15 }, { key: 'key_passes', w: 10 }],
+            'Créateur': [{ key: 'fm_rating', w: 10 }, { key: 'goals_p90', w: 20 }, { key: 'xg', w: 10 }, { key: 'chances', w: 15 }, { key: 'xa', w: 15 }, { key: 'key_passes', w: 15 }, { key: 'dribbles', w: 15 }],
         },
     };
 
@@ -666,6 +686,7 @@
     let cachedRefPools = {};   // { profKey: [player, ...] } for detail panel on-the-fly scoring
     let leagueData = [];       // [{division, country, strength, reputation, players, factor}]
     const leagueFloor = 0.20;  // minimum score factor for weakest leagues
+    let shortlist = new Set();  // Set of player indices (p.idx) — session only
 
     // ── Number parsing ──
     function parseNum(s) {
@@ -1219,6 +1240,36 @@
         years.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; contractSel.appendChild(o); });
     }
 
+    // ── Shortlist ──
+    function toggleShortlist(idx) {
+        if (shortlist.has(idx)) shortlist.delete(idx);
+        else shortlist.add(idx);
+        updateShortlistCount();
+        if (currentProfile === 'SHORTLIST') applyFilters();
+    }
+
+    function updateShortlistCount() {
+        const badge = document.getElementById('shortlistCount');
+        if (badge) badge.textContent = shortlist.size;
+    }
+
+    function exportShortlistCSV() {
+        const players = allPlayers.filter(p => shortlist.has(p.idx));
+        if (players.length === 0) return;
+        const headers = ['Joueur','Âge','Club','Division','Position','Minutes','Salaire','Meilleure Note','Meilleur Profil'];
+        const rows = players.map(p => [
+            p.name, p.age, p.club, p.division, p.position, p.minutes,
+            p.salary, p.bestScore || '', p.bestProfile || ''
+        ]);
+        const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'FM26_Shortlist.csv';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
     function renderProfileTabs() {
         const container = document.getElementById('profileTabs');
         let html = `<div class="profile-tab active" data-profile="ALL">Tous</div>`;
@@ -1226,6 +1277,7 @@
             const p = PROFILES[key];
             html += `<div class="profile-tab" data-profile="${key}"><i class="fas ${p.icon}"></i> ${key}</div>`;
         }
+        html += `<div class="profile-tab" data-profile="SHORTLIST"><i class="fas fa-star"></i> Shortlist <span class="count" id="shortlistCount">${shortlist.size}</span></div>`;
         html += `<div class="profile-tab" data-profile="LEAGUES"><i class="fas fa-ranking-star"></i> Ligues</div>`;
         container.innerHTML = html;
         container.querySelectorAll('.profile-tab').forEach(tab => {
@@ -1247,7 +1299,7 @@
 
     function renderStyleTabs() {
         const container = document.getElementById('styleTabs');
-        if (currentProfile === 'ALL' || currentProfile === 'LEAGUES' || !PROFILE_STYLES[currentProfile]) {
+        if (currentProfile === 'ALL' || currentProfile === 'LEAGUES' || currentProfile === 'SHORTLIST' || !PROFILE_STYLES[currentProfile]) {
             container.innerHTML = '';
             return;
         }
@@ -1297,6 +1349,7 @@
         if (filtersInline) filtersInline.textContent = activeFilters.length ? '— ' + activeFilters.join(', ') : '';
 
         filteredPlayers = allPlayers.filter(p => {
+            if (currentProfile === 'SHORTLIST' && !shortlist.has(p.idx)) return false;
             if (nameQ && !p.name.toLowerCase().includes(nameQ)) return false;
             if (club && p.club !== club) return false;
             if (division && p.division !== division) return false;
@@ -1305,9 +1358,9 @@
             if (salaryMaxFilter > 0 && p.salary_max > salaryMaxFilter * 1000) return false;
             if (contractYearFilter > 0 && (!p.contractDate || p.contractDate.getFullYear() > contractYearFilter)) return false;
             if (leagueMin > 0 && getLeagueStrength(p.division, p.country) < leagueMin) return false;
-            if (currentProfile !== 'ALL' && currentProfile !== 'LEAGUES' && !p.scores[currentProfile]) return false;
+            if (currentProfile !== 'ALL' && currentProfile !== 'LEAGUES' && currentProfile !== 'SHORTLIST' && !p.scores[currentProfile]) return false;
             if (scoreMin > 0) {
-                if (currentProfile !== 'ALL' && currentProfile !== 'LEAGUES') {
+                if (currentProfile !== 'ALL' && currentProfile !== 'LEAGUES' && currentProfile !== 'SHORTLIST') {
                     if (!p.scores[currentProfile] || p.scores[currentProfile].total < scoreMin) return false;
                 } else {
                     if (p.bestScore < scoreMin) return false;
@@ -1336,7 +1389,7 @@
                 case 'minutes': va = a.minutes; vb = b.minutes; break;
                 case 'salary': va = a.salary_max; vb = b.salary_max; break;
                 case 'score':
-                    if (currentProfile !== 'ALL') {
+                    if (currentProfile !== 'ALL' && currentProfile !== 'SHORTLIST') {
                         va = a.scores[currentProfile]?.total ?? -1;
                         vb = b.scores[currentProfile]?.total ?? -1;
                     } else {
@@ -1362,7 +1415,7 @@
         const qualified = filteredPlayers.filter(p => p.minutes >= minMin);
         const avgAge = qualified.length > 0 ? (qualified.reduce((s, p) => s + p.age, 0) / qualified.length).toFixed(1) : '-';
         const topPlayer = filteredPlayers[0];
-        const topLabel = currentProfile !== 'ALL' ? currentProfile : (topPlayer?.bestProfile || '-');
+        const topLabel = (currentProfile !== 'ALL' && currentProfile !== 'SHORTLIST') ? currentProfile : (topPlayer?.bestProfile || '-');
 
         // Inline summary (shown when collapsed)
         document.getElementById('summaryInline').textContent =
@@ -1383,7 +1436,7 @@
             </div>
             <div class="summary-card">
                 <div class="label"><i class="fas fa-trophy"></i> Meilleure note</div>
-                <div class="value">${topPlayer ? scoreBadge(currentProfile !== 'ALL' ? topPlayer.scores[currentProfile]?.total : topPlayer.bestScore) + ' <small style="color:var(--text-secondary);font-size:12px">' + topLabel + '</small>' : '-'}</div>
+                <div class="value">${topPlayer ? scoreBadge((currentProfile !== 'ALL' && currentProfile !== 'SHORTLIST') ? topPlayer.scores[currentProfile]?.total : topPlayer.bestScore) + ' <small style="color:var(--text-secondary);font-size:12px">' + topLabel + '</small>' : '-'}</div>
             </div>
         `;
     }
@@ -1393,17 +1446,25 @@
         if (currentProfile === 'LEAGUES') { renderLeagueTable(); return; }
         const thead = document.getElementById('tableHead');
         const tbody = document.getElementById('tableBody');
+        const isShortlist = currentProfile === 'SHORTLIST';
 
         // Build columns
-        const cols = [
+        const cols = [];
+        // First column: star (normal tabs) or remove (shortlist)
+        if (isShortlist) {
+            cols.push({ key: '_remove', label: '', width: '36px', nosort: true });
+        } else {
+            cols.push({ key: '_star', label: '★', width: '36px', nosort: true });
+        }
+        cols.push(
             { key: 'name', label: 'Joueur', width: '180px' },
             { key: 'age', label: 'Âge', width: '50px' },
             { key: 'club', label: 'Club', width: '140px' },
             { key: 'division', label: 'Division', width: '150px' },
             { key: 'minutes', label: 'Min', width: '65px' },
-        ];
+        );
 
-        if (currentProfile === 'ALL') {
+        if (currentProfile === 'ALL' || isShortlist) {
             cols.push({ key: 'salary', label: 'Salaire', width: '130px' });
             cols.push({ key: 'score', label: 'Meilleure', width: '80px' });
             for (const pk of PROFILE_ORDER) {
@@ -1416,15 +1477,19 @@
         // Header
         let headHTML = '<tr>';
         for (const col of cols) {
-            const isSorted = sortCol === col.key;
-            const arrow = isSorted ? (sortAsc ? '▲' : '▼') : '';
-            headHTML += `<th data-col="${col.key}" style="width:${col.width}">${col.label} <span class="sort-icon">${arrow}</span></th>`;
+            if (col.nosort) {
+                headHTML += `<th style="width:${col.width};cursor:default">${col.label}</th>`;
+            } else {
+                const isSorted = sortCol === col.key;
+                const arrow = isSorted ? (sortAsc ? '▲' : '▼') : '';
+                headHTML += `<th data-col="${col.key}" style="width:${col.width}">${col.label} <span class="sort-icon">${arrow}</span></th>`;
+            }
         }
         headHTML += '</tr>';
         thead.innerHTML = headHTML;
 
         // Attach sort handlers
-        thead.querySelectorAll('th').forEach(th => {
+        thead.querySelectorAll('th[data-col]').forEach(th => {
             th.addEventListener('click', () => {
                 const col = th.dataset.col;
                 if (sortCol === col) sortAsc = !sortAsc;
@@ -1446,6 +1511,13 @@
             bodyHTML += `<tr data-idx="${p.idx}">`;
             for (const col of cols) {
                 switch (col.key) {
+                    case '_star':
+                        const starActive = shortlist.has(p.idx) ? ' active' : '';
+                        bodyHTML += `<td><button class="shortlist-btn${starActive}" data-sl="${p.idx}" title="Shortlist"><i class="fa${shortlist.has(p.idx) ? 's' : 'r'} fa-star"></i></button></td>`;
+                        break;
+                    case '_remove':
+                        bodyHTML += `<td><button class="shortlist-remove" data-slrm="${p.idx}" title="Retirer"><i class="fas fa-times"></i></button></td>`;
+                        break;
                     case 'name':
                         bodyHTML += `<td class="name-cell">${escHTML(p.name)}</td>`;
                         break;
@@ -1466,7 +1538,7 @@
                         bodyHTML += `<td style="font-size:12px;color:var(--text-secondary)">${escHTML(p.salary)}</td>`;
                         break;
                     case 'score':
-                        if (currentProfile !== 'ALL') {
+                        if (currentProfile !== 'ALL' && currentProfile !== 'SHORTLIST') {
                             bodyHTML += `<td>${scoreBadge(p.scores[currentProfile]?.total)}</td>`;
                         } else {
                             bodyHTML += `<td>${scoreBadge(p.bestScore)} <small style="color:var(--text-secondary);font-size:11px">${p.bestProfile || ''}</small></td>`;
@@ -1480,6 +1552,27 @@
             bodyHTML += '</tr>';
         }
         tbody.innerHTML = bodyHTML;
+
+        // Star button click → toggle shortlist (stop propagation to avoid opening detail)
+        tbody.querySelectorAll('[data-sl]').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const idx = parseInt(btn.dataset.sl);
+                toggleShortlist(idx);
+                // Update this button visually
+                const isNowActive = shortlist.has(idx);
+                btn.classList.toggle('active', isNowActive);
+                btn.querySelector('i').className = isNowActive ? 'fas fa-star' : 'far fa-star';
+            });
+        });
+
+        // Remove button click → remove from shortlist
+        tbody.querySelectorAll('[data-slrm]').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                toggleShortlist(parseInt(btn.dataset.slrm));
+            });
+        });
 
         // Row click → detail
         tbody.querySelectorAll('tr[data-idx]').forEach(tr => {
@@ -1573,8 +1666,12 @@
     function renderPagination() {
         const totalPages = Math.ceil(filteredPlayers.length / PAGE_SIZE);
         const container = document.getElementById('pagination');
+        const exportBtn = currentProfile === 'SHORTLIST' && shortlist.size > 0
+            ? `<button class="export-btn" id="exportShortlistBtn"><i class="fas fa-download"></i> Exporter CSV</button>` : '';
         if (totalPages <= 1) {
-            container.innerHTML = `<span>${filteredPlayers.length} joueur${filteredPlayers.length > 1 ? 's' : ''}</span><span></span>`;
+            container.innerHTML = `<span>${filteredPlayers.length} joueur${filteredPlayers.length > 1 ? 's' : ''}</span><span>${exportBtn}</span>`;
+            const eb = document.getElementById('exportShortlistBtn');
+            if (eb) eb.addEventListener('click', exportShortlistCSV);
             return;
         }
         const start = currentPage * PAGE_SIZE + 1;
@@ -1593,8 +1690,10 @@
         }
         btns += `<button ${currentPage >= totalPages - 1 ? 'disabled' : ''} data-page="${currentPage + 1}"><i class="fas fa-chevron-right"></i></button>`;
 
-        container.innerHTML = `<span>${start}–${end} sur ${filteredPlayers.length}</span><div class="pagination-buttons">${btns}</div>`;
+        container.innerHTML = `<span>${start}–${end} sur ${filteredPlayers.length}</span><div style="display:flex;align-items:center;gap:12px">${exportBtn}<div class="pagination-buttons">${btns}</div></div>`;
 
+        const eb = document.getElementById('exportShortlistBtn');
+        if (eb) eb.addEventListener('click', exportShortlistCSV);
         container.querySelectorAll('button[data-page]').forEach(btn => {
             btn.addEventListener('click', () => {
                 currentPage = parseInt(btn.dataset.page);
@@ -1611,6 +1710,24 @@
 
         document.getElementById('detailName').textContent = player.name;
         document.getElementById('detailMeta').textContent = `${player.age} ans · ${player.club} · ${player.division}`;
+
+        // Shortlist button in detail
+        const slBtn = document.getElementById('detailShortlistBtn');
+        const slActive = shortlist.has(player.idx);
+        slBtn.classList.toggle('active', slActive);
+        slBtn.querySelector('i').className = slActive ? 'fas fa-star' : 'far fa-star';
+        slBtn.onclick = () => {
+            toggleShortlist(player.idx);
+            const nowActive = shortlist.has(player.idx);
+            slBtn.classList.toggle('active', nowActive);
+            slBtn.querySelector('i').className = nowActive ? 'fas fa-star' : 'far fa-star';
+            // Update the star in the table row if visible
+            const rowBtn = document.querySelector(`[data-sl="${player.idx}"]`);
+            if (rowBtn) {
+                rowBtn.classList.toggle('active', nowActive);
+                rowBtn.querySelector('i').className = nowActive ? 'fas fa-star' : 'far fa-star';
+            }
+        };
 
         // Info grid
         const pLeagueStr = getLeagueStrength(player.division, player.country);
@@ -1644,9 +1761,10 @@
             }
         }
 
-        // Find best variant for default selection
-        const selProf = selectedDetailProfile || player.bestProfile;
-        const selStyle = selectedDetailStyle || 'Complet';
+        // Default selection: current tab's profile/style if viewing a specific profile, else best profile
+        const isSpecificProfile = currentProfile !== 'ALL' && currentProfile !== 'SHORTLIST' && currentProfile !== 'LEAGUES' && player.scores[currentProfile];
+        const selProf = isSpecificProfile ? currentProfile : player.bestProfile;
+        const selStyle = isSpecificProfile ? (currentStyles[currentProfile] || 'Complet') : 'Complet';
         const selKey = selProf + '|' + selStyle;
 
         for (const pk of PROFILE_ORDER) {
@@ -1693,9 +1811,9 @@
             });
         });
 
-        // Radar chart — initial render
-        const defaultProfile = selectedDetailProfile && player.scores[selectedDetailProfile] ? selectedDetailProfile : player.bestProfile;
-        const defaultStyle = selectedDetailStyle || 'Complet';
+        // Radar chart — initial render (use selProf/selStyle already computed above)
+        const defaultProfile = selProf && player.scores[selProf] ? selProf : player.bestProfile;
+        const defaultStyle = selStyle;
         selectedDetailProfile = defaultProfile;
         selectedDetailStyle = defaultStyle;
         {
@@ -1720,6 +1838,7 @@
         document.getElementById('detailPanel').classList.remove('open');
         document.getElementById('backdrop').classList.remove('open');
         selectedDetailProfile = null;
+        selectedDetailStyle = null;
     }
 
     function getScoreColorRaw(score) {
