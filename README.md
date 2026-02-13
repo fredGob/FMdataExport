@@ -1,5 +1,7 @@
 # FM26 Scout Tools
 
+🌍 **This documentation is available in both English and French.** | **Cette documentation est disponible en anglais et en français.**
+
 Scouting tools for Football Manager 2026: game data extraction and analysis in an interactive dashboard.
 
 ## Project Structure
