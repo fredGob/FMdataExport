@@ -1,5 +1,94 @@
 # FM26 Scout Dashboard
 
+Football scouting dashboard based on CSV exports from Football Manager 2026. **100% client-side** application in a single HTML file.
+
+## Quick Start
+
+1. Open `FM26_dataAnalyser.html` in a browser
+2. Drag and drop (or click) to load a CSV file exported from FM26
+3. Explore players by profile, apply filters, click on a player for details
+
+## Prepare Data in FM26
+
+### Install STATS View
+
+The `STATS.fmf` file contains the column configuration expected by the dashboard.
+
+Copy `STATS.fmf` to the FM26 views folder:
+```
+Documents/Sports Interactive/Football Manager 26/views/
+```
+
+> On Linux/Proton:
+> ```
+> ~/.local/share/Steam/steamapps/compatdata/<app_id>/pfx/drive_c/users/steamuser/Documents/Sports Interactive/Football Manager 26/views/
+> ```
+
+### Configure Player Search
+
+1. Go to **Scouting > Player Database**
+2. Change the network and select **World** (optional, to get all players)
+3. Remove all filters, select **Interest = not considered**
+4. Modify search, uncheck **Exclude: your team**
+5. Add a minimum playing time filter to **0 minutes** (Add condition > General Stats > General > Minutes)
+6. Load the **STATS** view: right-click on a column > Import View > Import STATS
+
+### Export
+
+Use the [DataExport](../DataExport/) plugin (**F10**) to generate the CSV, then import it into the dashboard.
+
+## Features
+
+- **Filters**: name, club, division, age, minutes played, minimum rating, max salary, contract end, league level
+- **8 position profiles**: GK, CB, FB, DM, CM, AM, WG, ST
+- **Play styles**: each profile has specialized sub-styles (e.g., CB > Stopper / Ball-Playing)
+- **Rating**: each player is rated 0-100 by an adapted rating system
+- **League strength**: rating adjustment based on division level
+- **Detail panel**: ratings by profile and style, interactive radar chart, complete stats
+- **Settings**: modify profile weights via settings modal
+- **Theme**: dark / light, persisted in localStorage
+
+### Available Profiles and Styles
+
+| Profile | Specialized Styles |
+|---------|---------------------|
+| GK | Sweeper, Ball-Playing |
+| CB | Stopper, Ball-Playing |
+| FB | Defensive, Offensive |
+| DM | Anchor, Playmaker |
+| CM | Organizer, Box-to-Box |
+| AM | Creator, Attacking |
+| WG | Dribbler, Playmaker |
+| ST | Finisher, Target Man |
+
+## Technical Stack
+
+No build, no server. Just open `FM26_dataAnalyser.html`.
+
+- **PapaParse 5.4.1** (CDN) — CSV parsing
+- **Chart.js 4.4.0** (CDN) — radar charts
+- **Google Fonts (Inter)** — typography
+- **Font Awesome 6.5.1** (CDN) — icons
+
+## Expected CSV Format
+
+Export via DataExport plugin with STATS view:
+- **Encoding**: UTF-8 BOM, comma delimiter, European numbers (`2,7` = 2.7)
+- **44 columns** (name, age, club, division, position, salary, contract, matches, minutes, goals, stats per-90)
+- **10,000+ players** typically
+
+## Files
+
+| File | Description |
+|-------|-------------|
+| `FM26_dataAnalyser.html` | Complete application (HTML + CSS + JS) |
+| `STATS.fmf` | FM26 view with expected columns |
+| `FM26_Example_data.csv` | Example file to test the dashboard |
+
+---
+
+# FM26 Scout Dashboard
+
 Dashboard de recrutement football basé sur les exports CSV de Football Manager 2026. Application **100% client-side** dans un seul fichier HTML.
 
 ## Utilisation rapide
