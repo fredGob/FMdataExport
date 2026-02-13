@@ -1,5 +1,45 @@
 # FM26 Scout Tools
 
+Scouting tools for Football Manager 2026: game data extraction and analysis in an interactive dashboard.
+
+## Project Structure
+
+The project consists of two independent parts:
+
+### [DataExport](DataExport/)
+
+BepInEx plugin that injects into FM26 to export table data to CSV files. Press **F10** in-game to start the export.
+
+- C# plugin (.dll) for BepInEx
+- Progressive export with automatic scrolling for large tables (36,000+ players)
+- Automatic rich text cleaning
+
+### [DataAnalyser](DataAnalyser/)
+
+100% client-side web dashboard to analyze exported players. Open `index.html` in a browser and import the CSV.
+
+- 8 position profiles (GK, CB, FB, DM, CM, AM, WG, ST) with specialized play styles
+- Weighted percentile scoring considering league strength
+- Advanced filters, sorting, pagination, radar charts, detail panel
+
+## Workflow
+
+```
+FM26 (in-game)         DataExport             DataAnalyser
++--------------+      +-------------+      +----------------+
+| Player table | F10  | Auto CSV     | -->  | Import CSV     |
+|              |----->| export       |      | + Analysis     |
++--------------+      +-------------+      +----------------+
+```
+
+1. Configure the view in FM26 (see [DataAnalyser/README](DataAnalyser/) for recommended view)
+2. Press **F10** to export to CSV via the plugin
+3. Open the dashboard and import the CSV file
+
+---
+
+# FM26 Scout Tools
+
 Outils de scouting pour Football Manager 2026 : extraction des données du jeu et analyse dans un dashboard interactif.
 
 ## Structure du projet
