@@ -419,30 +419,30 @@
     // ── Column index mapping (CSV parsed without headers) ──
     const C = {
         // #general
-        NAME: 1, AGE: 2, CLUB: 3, COUNTRY: 4, DIVISION: 5, POSITION: 6,
-        SALARY: 7, CONTRACT: 8, MINUTES: 9, FM_RATING: 10,
+        NAME: 1, UID: 2, AGE: 3, CLUB: 4, COUNTRY: 5, DIVISION: 6, POSITION: 7,
+        SALARY: 8, CONTRACT: 9, MINUTES: 10, FM_RATING: 11,
         // #GK
-        GOALS_CONCEDED: 11, SAVES: 12, XG_PREVENTED: 13, SAVE_PCT: 14,
+        GOALS_CONCEDED: 12, SAVES: 13, XG_PREVENTED: 14, SAVE_PCT: 15,
         // #defensive
-        CLEARANCES: 15, BLOCKS: 16, INTERCEPTIONS: 17, TACKLES: 18, DEF_TACKLES: 19,
+        CLEARANCES: 16, BLOCKS: 17, INTERCEPTIONS: 18, TACKLES: 19, DEF_TACKLES: 20,
         // #recuperation and lost
-        POSS_RECOV: 20, POSS_LOST: 21,
+        POSS_RECOV: 21, POSS_LOST: 22,
         // #pressing
-        PRESS_T: 22, PRESSING: 23,
+        PRESS_T: 23, PRESSING: 24,
         // #aerial
-        AERIAL: 24, AERIAL_WON: 25,
+        AERIAL: 25, AERIAL_WON: 26,
         // #pass
-        PASSES_TOTAL: 26, PASSES_SUCC: 27, PASS_PCT: 28, PASSES_PROG: 29,
+        PASSES_TOTAL: 27, PASSES_SUCC: 28, PASS_PCT: 29, PASSES_PROG: 30,
         // #creativity
-        KEY_PASSES: 30, XA: 31, CHANCES: 32,
+        KEY_PASSES: 31, XA: 32, CHANCES: 33,
         // #center
-        CROSSES_ATT: 33, CROSSES_WON: 34,
+        CROSSES_ATT: 34, CROSSES_WON: 35,
         // #dribble
-        DRIBBLES: 35,
+        DRIBBLES: 36,
         // #shot
-        SHOTS: 36, SHOTS_OT_PCT: 37, XG_NP: 38, GOALS_P90: 39,
+        SHOTS: 37, SHOTS_OT_PCT: 38, XG_NP: 39, GOALS_P90: 40,
         // #run
-        DISTANCE: 40, SPRINTS: 41
+        DISTANCE: 41, SPRINTS: 42
     };
 
     // ── Master stat catalog ──
@@ -789,7 +789,7 @@
 
                     // Build stats array (numeric values by column index)
                     const stats = {};
-                    for (let ci = 10; ci <= 41; ci++) {
+                    for (let ci = C.FM_RATING; ci <= C.SPRINTS; ci++) {
                         stats[ci] = parseNum(r[ci]);
                     }
 
@@ -801,6 +801,7 @@
 
                     players.push({
                         idx: players.length,
+                        uid: (r[C.UID] || '').trim(),
                         name: r[C.NAME].trim(),
                         age: parseNum(r[C.AGE]),
                         club: (r[C.CLUB] || '').trim(),
@@ -1256,9 +1257,9 @@
     function exportShortlistCSV() {
         const players = allPlayers.filter(p => shortlist.has(p.idx));
         if (players.length === 0) return;
-        const headers = ['Joueur','Âge','Club','Division','Position','Minutes','Salaire','Meilleure Note','Meilleur Profil'];
+        const headers = ['Unique ID','Joueur','Âge','Club','Division','Position','Minutes','Salaire','Meilleure Note','Meilleur Profil'];
         const rows = players.map(p => [
-            p.name, p.age, p.club, p.division, p.position, p.minutes,
+            p.uid, p.name, p.age, p.club, p.division, p.position, p.minutes,
             p.salary, p.bestScore || '', p.bestProfile || ''
         ]);
         const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -1456,6 +1457,9 @@
         } else {
             cols.push({ key: '_star', label: '★', width: '36px', nosort: true });
         }
+        if (isShortlist) {
+            cols.push({ key: 'uid', label: 'UID', width: '80px' });
+        }
         cols.push(
             { key: 'name', label: 'Joueur', width: '180px' },
             { key: 'age', label: 'Âge', width: '50px' },
@@ -1517,6 +1521,9 @@
                         break;
                     case '_remove':
                         bodyHTML += `<td><button class="shortlist-remove" data-slrm="${p.idx}" title="Retirer"><i class="fas fa-times"></i></button></td>`;
+                        break;
+                    case 'uid':
+                        bodyHTML += `<td style="font-size:11px;color:var(--text-secondary)">${escHTML(p.uid)}</td>`;
                         break;
                     case 'name':
                         bodyHTML += `<td class="name-cell">${escHTML(p.name)}</td>`;
