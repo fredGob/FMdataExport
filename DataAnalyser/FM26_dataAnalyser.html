@@ -177,9 +177,10 @@
 
         /* Theme toggle */
         .header-actions { margin-left: auto; display: flex; gap: 8px; }
-        .theme-toggle { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+        .theme-toggle, .lang-toggle { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
             color: var(--text-secondary); padding: 6px 10px; cursor: pointer; font-size: 16px; transition: all .15s; }
-        .theme-toggle:hover { border-color: var(--accent); color: var(--text-primary); }
+        .theme-toggle:hover, .lang-toggle:hover { border-color: var(--accent); color: var(--text-primary); }
+        .lang-toggle { font-size: 12px; font-weight: 700; letter-spacing: .5px; padding: 6px 10px; min-width: 36px; text-align: center; }
 
         /* Collapsible sections */
         .collapsible-section { margin-bottom: 20px; }
@@ -264,10 +265,11 @@
 <body>
     <header>
         <h1><i class="fas fa-futbol"></i>FM26 Scout Dashboard</h1>
-        <span class="subtitle">Analyse de recrutement basée sur les exports Football Manager</span>
+        <span class="subtitle" data-i18n="subtitle">Analyse de recrutement basée sur les exports Football Manager</span>
         <div class="header-actions">
-            <button class="settings-btn" id="settingsBtn" title="Paramètres des profils"><i class="fas fa-sliders"></i></button>
-            <button class="theme-toggle" id="themeToggle" title="Changer de thème"><i class="fas fa-moon"></i></button>
+            <button class="settings-btn" id="settingsBtn" data-i18n-title="settings_title" title="Paramètres des profils"><i class="fas fa-sliders"></i></button>
+            <button class="lang-toggle" id="langToggle" title="FR / EN">FR</button>
+            <button class="theme-toggle" id="themeToggle" data-i18n-title="theme_title" title="Changer de thème"><i class="fas fa-moon"></i></button>
         </div>
     </header>
 
@@ -276,8 +278,8 @@
         <input type="file" id="fileInput" accept=".csv">
         <div class="upload-zone" id="uploadZone">
             <i class="fas fa-cloud-upload-alt"></i>
-            <h2>Charger un export CSV</h2>
-            <p>Glissez-déposez votre fichier CSV ou cliquez pour parcourir</p>
+            <h2 data-i18n="upload_title">Charger un export CSV</h2>
+            <p data-i18n="upload_desc">Glissez-déposez votre fichier CSV ou cliquez pour parcourir</p>
         </div>
 
         <!-- Dashboard (hidden until data loaded) -->
@@ -286,7 +288,7 @@
             <div class="collapsible-section">
                 <div class="collapsible-header" id="summaryToggle">
                     <i class="fas fa-chevron-down chevron collapsed" id="summaryChevron"></i>
-                    <span>Résumé</span>
+                    <span data-i18n="summary">Résumé</span>
                     <span class="inline-hint" id="summaryInline"></span>
                 </div>
                 <div class="collapsible-body collapsed" id="summaryWrap">
@@ -298,49 +300,49 @@
             <div class="collapsible-section">
                 <div class="collapsible-header" id="filtersToggle">
                     <i class="fas fa-chevron-down chevron" id="filtersChevron"></i>
-                    <span>Filtres</span>
+                    <span data-i18n="filters">Filtres</span>
                     <span class="inline-hint" id="filtersInline"></span>
                 </div>
                 <div class="collapsible-body" id="filtersWrap">
                     <div class="filters" id="filters">
                         <div class="filter-group">
-                            <label>Recherche</label>
-                            <input type="text" id="filterName" placeholder="Nom du joueur...">
+                            <label data-i18n="filter_search">Recherche</label>
+                            <input type="text" id="filterName" data-i18n-placeholder="filter_placeholder_name" placeholder="Nom du joueur...">
                         </div>
                         <div class="filter-group">
-                            <label>Club</label>
-                            <select id="filterClub"><option value="">Tous</option></select>
+                            <label data-i18n="filter_club">Club</label>
+                            <select id="filterClub"><option value="" data-i18n="filter_all_m">Tous</option></select>
                         </div>
                         <div class="filter-group">
-                            <label>Division</label>
-                            <select id="filterDivision"><option value="">Toutes</option></select>
+                            <label data-i18n="filter_division">Division</label>
+                            <select id="filterDivision"><option value="" data-i18n="filter_all_f">Toutes</option></select>
                         </div>
                         <div class="filter-group">
-                            <label>Âge min</label>
+                            <label data-i18n="filter_age_min">Âge min</label>
                             <input type="number" id="filterAgeMin" placeholder="16" min="14" max="50">
                         </div>
                         <div class="filter-group">
-                            <label>Âge max</label>
+                            <label data-i18n="filter_age_max">Âge max</label>
                             <input type="number" id="filterAgeMax" placeholder="45" min="14" max="50">
                         </div>
                         <div class="filter-group">
-                            <label>Min. minutes</label>
+                            <label data-i18n="filter_min_minutes">Min. minutes</label>
                             <input type="number" id="filterMinutes" value="200" min="0" step="90">
                         </div>
                         <div class="filter-group">
-                            <label>Note min</label>
+                            <label data-i18n="filter_score_min">Note min</label>
                             <input type="number" id="filterScoreMin" value="50" min="0" max="100" step="5" style="min-width:70px">
                         </div>
                         <div class="filter-group">
-                            <label>Salaire max (K€)</label>
-                            <input type="number" id="filterSalaryMax" placeholder="∞" min="0" step="50" style="min-width:90px" title="Salaire max du joueur (valeur haute de la fourchette) en K€/mois">
+                            <label data-i18n="filter_salary_max">Salaire max (K€)</label>
+                            <input type="number" id="filterSalaryMax" placeholder="∞" min="0" step="50" style="min-width:90px" data-i18n-title="filter_salary_tooltip" title="Salaire max du joueur (valeur haute de la fourchette) en K€/mois">
                         </div>
                         <div class="filter-group">
-                            <label>Fin contrat ≤</label>
-                            <select id="filterContractEnd"><option value="">Toutes</option></select>
+                            <label data-i18n="filter_contract_end">Fin contrat ≤</label>
+                            <select id="filterContractEnd"><option value="" data-i18n="filter_all_f">Toutes</option></select>
                         </div>
                         <div class="filter-group">
-                            <label>Niv. ligue min</label>
+                            <label data-i18n="filter_league_min">Niv. ligue min</label>
                             <input type="number" id="filterLeagueMin" placeholder="0" min="0" max="20" value="0">
                         </div>
                     </div>
@@ -372,22 +374,22 @@
                     <div class="detail-meta" id="detailMeta"></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:4px">
-                    <button class="detail-shortlist-btn" id="detailShortlistBtn" title="Ajouter/retirer de la shortlist"><i class="far fa-star"></i></button>
+                    <button class="detail-shortlist-btn" id="detailShortlistBtn" data-i18n-title="detail_shortlist_title" title="Ajouter/retirer de la shortlist"><i class="far fa-star"></i></button>
                     <button class="close-btn" id="closeDetail"><i class="fas fa-times"></i></button>
                 </div>
             </div>
             <div class="detail-scores" id="detailScores"></div>
         </div>
         <div class="detail-section">
-            <h3>Informations</h3>
+            <h3 data-i18n="detail_info">Informations</h3>
             <div class="detail-info-grid" id="detailInfo"></div>
         </div>
         <div class="detail-section">
-            <h3>Radar <span id="radarProfileLabel" style="color:var(--accent)"></span></h3>
+            <h3><span data-i18n="detail_radar">Radar</span> <span id="radarProfileLabel" style="color:var(--accent)"></span></h3>
             <div class="radar-container"><canvas id="radarChart"></canvas></div>
         </div>
         <div class="detail-section">
-            <h3>Statistiques détaillées</h3>
+            <h3 data-i18n="detail_stats">Statistiques détaillées</h3>
             <div class="detail-stats-grid" id="detailStats"></div>
         </div>
     </div>
@@ -396,16 +398,16 @@
     <div class="modal-overlay" id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2><i class="fas fa-sliders" style="color:var(--accent);margin-right:8px"></i>Poids des profils</h2>
+                <h2><i class="fas fa-sliders" style="color:var(--accent);margin-right:8px"></i><span data-i18n="settings_modal_title">Poids des profils</span></h2>
                 <button class="close-btn" id="settingsClose"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-tabs" id="settingsTabs"></div>
             <div class="modal-body" id="settingsBody"></div>
             <div class="modal-footer">
-                <button class="btn-danger" id="settingsReset"><i class="fas fa-undo"></i> Réinitialiser</button>
+                <button class="btn-danger" id="settingsReset"><i class="fas fa-undo"></i> <span data-i18n="settings_reset">Réinitialiser</span></button>
                 <div style="display:flex;gap:8px">
-                    <button class="btn-default" id="settingsCancel">Annuler</button>
-                    <button class="btn-primary" id="settingsApply"><i class="fas fa-check"></i> Appliquer</button>
+                    <button class="btn-default" id="settingsCancel" data-i18n="settings_cancel">Annuler</button>
+                    <button class="btn-primary" id="settingsApply"><i class="fas fa-check"></i> <span data-i18n="settings_apply">Appliquer</span></button>
                 </div>
             </div>
         </div>
@@ -445,53 +447,310 @@
         DISTANCE: 41, SPRINTS: 42
     };
 
+    // ── Internationalisation ──
+    let currentLang = localStorage.getItem('fm26-lang') || 'fr';
+    const I18N = {
+      fr: {
+        subtitle: 'Analyse de recrutement basée sur les exports Football Manager',
+        upload_title: 'Charger un export CSV',
+        upload_desc: 'Glissez-déposez votre fichier CSV ou cliquez pour parcourir',
+        loading: 'Chargement en cours...',
+        players_loaded: 'joueurs chargés',
+        summary: 'Résumé',
+        filters: 'Filtres',
+        filter_search: 'Recherche',
+        filter_club: 'Club',
+        filter_division: 'Division',
+        filter_age_min: 'Âge min',
+        filter_age_max: 'Âge max',
+        filter_min_minutes: 'Min. minutes',
+        filter_score_min: 'Note min',
+        filter_salary_max: 'Salaire max (K€)',
+        filter_contract_end: 'Fin contrat ≤',
+        filter_league_min: 'Niv. ligue min',
+        filter_placeholder_name: 'Nom du joueur...',
+        filter_all_m: 'Tous',
+        filter_all_f: 'Toutes',
+        filter_salary_tooltip: 'Salaire max du joueur (valeur haute de la fourchette) en K€/mois',
+        settings_title: 'Paramètres des profils',
+        theme_title: 'Changer de thème',
+        tab_all: 'Tous',
+        tab_shortlist: 'Shortlist',
+        tab_leagues: 'Ligues',
+        style_complete: 'Complet',
+        col_player: 'Joueur',
+        col_age: 'Âge',
+        col_club: 'Club',
+        col_division: 'Division',
+        col_minutes: 'Min',
+        col_salary: 'Salaire',
+        col_best: 'Meilleure',
+        col_uid: 'UID',
+        no_players: 'Aucun joueur trouvé',
+        summary_players: 'Joueurs affichés',
+        summary_avg_age: 'Âge moyen',
+        summary_best_player: 'Meilleur joueur',
+        summary_best_score: 'Meilleure note',
+        summary_inline_players: 'joueurs',
+        pagination_player: 'joueur',
+        pagination_players: 'joueurs',
+        pagination_of: 'sur',
+        pagination_export: 'Exporter CSV',
+        league_rank: '#',
+        league_country: 'Pays',
+        league_division: 'Division',
+        league_score: 'Score',
+        league_factor: 'Facteur',
+        league_players: 'Joueurs',
+        league_reputation: 'Réputation',
+        league_division_unit: 'division',
+        league_divisions_unit: 'divisions',
+        detail_info: 'Informations',
+        detail_radar: 'Radar',
+        detail_stats: 'Statistiques détaillées',
+        detail_position: 'Position',
+        detail_salary: 'Salaire',
+        detail_contract: 'Contrat',
+        detail_minutes: 'Minutes',
+        detail_fm_rating: 'Note FM',
+        detail_league_level: 'Niv. ligue',
+        detail_league_title: 'Niveau ligue',
+        detail_shortlist_title: 'Ajouter/retirer de la shortlist',
+        detail_remove: 'Retirer',
+        detail_shortlist: 'Shortlist',
+        years_suffix: 'ans',
+        settings_modal_title: 'Poids des profils',
+        settings_reset: 'Réinitialiser',
+        settings_cancel: 'Annuler',
+        settings_apply: 'Appliquer',
+        settings_total: 'Total',
+        settings_remove: 'Retirer',
+        settings_add_stat: '+ Ajouter une stat...',
+        settings_add_btn: 'Ajouter',
+        alert_empty_file: 'Fichier vide ou invalide',
+        alert_parse_error: 'Erreur de parsing: ',
+        alert_csv_only: 'Veuillez déposer un fichier .csv',
+        filter_hint_contract: 'Contrat ≤',
+        filter_hint_league: 'Ligue ≥',
+        filter_hint_score: 'Note ≥',
+        stat_conceded_p90: 'Encaissé /90',
+        stat_saves_p90: 'Arrêts /90',
+        stat_xg_prev_p90: 'xG évités /90',
+        stat_save_pct: '% arrêts',
+        stat_clearances_p90: 'Dég /90',
+        stat_blocks_p90: 'Blocks /90',
+        stat_interceptions_p90: 'Int /90',
+        stat_tackles_p90: 'Tackles /90',
+        stat_key_tackles_p90: 'Tcl décisifs /90',
+        stat_poss_recov_p90: 'Poss récup /90',
+        stat_poss_lost_p90: 'Poss perd /90',
+        stat_press_att_p90: 'Pressing tenté /90',
+        stat_press_succ_p90: 'Pressing réussi /90',
+        stat_aerial_att_p90: 'Aériens tentés /90',
+        stat_aerial_won_p90: 'Aériens gagnés /90',
+        stat_passes_att_p90: 'Passes tent. /90',
+        stat_passes_succ_p90: 'Passes réussies /90',
+        stat_pass_pct: '% passes',
+        stat_passes_prog_p90: 'Passes prog /90',
+        stat_key_passes_p90: 'Passes clés /90',
+        stat_xa_p90: 'xA (PdA) /90',
+        stat_chances_p90: 'Occasions créées /90',
+        stat_crosses_att_p90: 'Centres tent. /90',
+        stat_crosses_succ_p90: 'Centres réussis /90',
+        stat_dribbles_p90: 'Dribbles /90',
+        stat_shots_p90: 'Tirs /90',
+        stat_shots_ot_pct: '% cadrés',
+        stat_xg_p90: 'xG /90',
+        stat_goals_p90: 'Buts /90',
+        stat_distance_p90: 'Distance /90',
+        stat_sprints_p90: 'Sprints /90',
+        export_uid: 'Unique ID',
+        export_player: 'Joueur',
+        export_age: 'Âge',
+        export_club: 'Club',
+        export_division: 'Division',
+        export_position: 'Position',
+        export_minutes: 'Minutes',
+        export_salary: 'Salaire',
+        export_best_score: 'Meilleure Note',
+        export_best_profile: 'Meilleur Profil',
+      },
+      en: {
+        subtitle: 'Recruitment analysis based on Football Manager exports',
+        upload_title: 'Load a CSV export',
+        upload_desc: 'Drag and drop your CSV file or click to browse',
+        loading: 'Loading...',
+        players_loaded: 'players loaded',
+        summary: 'Summary',
+        filters: 'Filters',
+        filter_search: 'Search',
+        filter_club: 'Club',
+        filter_division: 'Division',
+        filter_age_min: 'Age min',
+        filter_age_max: 'Age max',
+        filter_min_minutes: 'Min. minutes',
+        filter_score_min: 'Score min',
+        filter_salary_max: 'Max salary (K€)',
+        filter_contract_end: 'Contract ≤',
+        filter_league_min: 'League lvl min',
+        filter_placeholder_name: 'Player name...',
+        filter_all_m: 'All',
+        filter_all_f: 'All',
+        filter_salary_tooltip: 'Max salary (high range) in K€/month',
+        settings_title: 'Profile settings',
+        theme_title: 'Toggle theme',
+        tab_all: 'All',
+        tab_shortlist: 'Shortlist',
+        tab_leagues: 'Leagues',
+        style_complete: 'Complete',
+        col_player: 'Player',
+        col_age: 'Age',
+        col_club: 'Club',
+        col_division: 'Division',
+        col_minutes: 'Min',
+        col_salary: 'Salary',
+        col_best: 'Best',
+        col_uid: 'UID',
+        no_players: 'No players found',
+        summary_players: 'Players shown',
+        summary_avg_age: 'Average age',
+        summary_best_player: 'Best player',
+        summary_best_score: 'Best score',
+        summary_inline_players: 'players',
+        pagination_player: 'player',
+        pagination_players: 'players',
+        pagination_of: 'of',
+        pagination_export: 'Export CSV',
+        league_rank: '#',
+        league_country: 'Country',
+        league_division: 'Division',
+        league_score: 'Score',
+        league_factor: 'Factor',
+        league_players: 'Players',
+        league_reputation: 'Reputation',
+        league_division_unit: 'division',
+        league_divisions_unit: 'divisions',
+        detail_info: 'Information',
+        detail_radar: 'Radar',
+        detail_stats: 'Detailed statistics',
+        detail_position: 'Position',
+        detail_salary: 'Salary',
+        detail_contract: 'Contract',
+        detail_minutes: 'Minutes',
+        detail_fm_rating: 'FM Rating',
+        detail_league_level: 'League lvl',
+        detail_league_title: 'League level',
+        detail_shortlist_title: 'Add/remove from shortlist',
+        detail_remove: 'Remove',
+        detail_shortlist: 'Shortlist',
+        years_suffix: 'y.o.',
+        settings_modal_title: 'Profile weights',
+        settings_reset: 'Reset',
+        settings_cancel: 'Cancel',
+        settings_apply: 'Apply',
+        settings_total: 'Total',
+        settings_remove: 'Remove',
+        settings_add_stat: '+ Add a stat...',
+        settings_add_btn: 'Add',
+        alert_empty_file: 'Empty or invalid file',
+        alert_parse_error: 'Parsing error: ',
+        alert_csv_only: 'Please drop a .csv file',
+        filter_hint_contract: 'Contract ≤',
+        filter_hint_league: 'League ≥',
+        filter_hint_score: 'Score ≥',
+        stat_conceded_p90: 'Conceded /90',
+        stat_saves_p90: 'Saves /90',
+        stat_xg_prev_p90: 'xG prevented /90',
+        stat_save_pct: 'Save %',
+        stat_clearances_p90: 'Clearances /90',
+        stat_blocks_p90: 'Blocks /90',
+        stat_interceptions_p90: 'Int /90',
+        stat_tackles_p90: 'Tackles /90',
+        stat_key_tackles_p90: 'Key tackles /90',
+        stat_poss_recov_p90: 'Poss recov /90',
+        stat_poss_lost_p90: 'Poss lost /90',
+        stat_press_att_p90: 'Pressing att /90',
+        stat_press_succ_p90: 'Pressing succ /90',
+        stat_aerial_att_p90: 'Aerial att /90',
+        stat_aerial_won_p90: 'Aerial won /90',
+        stat_passes_att_p90: 'Passes att /90',
+        stat_passes_succ_p90: 'Passes succ /90',
+        stat_pass_pct: 'Pass %',
+        stat_passes_prog_p90: 'Prog passes /90',
+        stat_key_passes_p90: 'Key passes /90',
+        stat_xa_p90: 'xA /90',
+        stat_chances_p90: 'Chances created /90',
+        stat_crosses_att_p90: 'Crosses att /90',
+        stat_crosses_succ_p90: 'Crosses succ /90',
+        stat_dribbles_p90: 'Dribbles /90',
+        stat_shots_p90: 'Shots /90',
+        stat_shots_ot_pct: 'On target %',
+        stat_xg_p90: 'xG /90',
+        stat_goals_p90: 'Goals /90',
+        stat_distance_p90: 'Distance /90',
+        stat_sprints_p90: 'Sprints /90',
+        export_uid: 'Unique ID',
+        export_player: 'Player',
+        export_age: 'Age',
+        export_club: 'Club',
+        export_division: 'Division',
+        export_position: 'Position',
+        export_minutes: 'Minutes',
+        export_salary: 'Salary',
+        export_best_score: 'Best Score',
+        export_best_profile: 'Best Profile',
+      }
+    };
+    function t(key) { return I18N[currentLang]?.[key] || I18N.fr[key] || key; }
+
     // ── Master stat catalog ──
     const STAT_CATALOG = {
         // GK
-        goals_conceded:{ label: 'Buts enc. (inv.)', get: p => p.stats[C.GOALS_CONCEDED], inverted: true },
-        saves:         { label: 'Arrêts',            get: p => p.stats[C.SAVES] },
-        xg_prevented:  { label: 'xG évités',         get: p => p.stats[C.XG_PREVENTED] },
-        save_pct:      { label: '% arrêts',          get: p => p.stats[C.SAVE_PCT] },
+        goals_conceded:{ label: 'Buts enc. (inv.)',    label_en: 'Goals conc. (inv.)',   get: p => p.stats[C.GOALS_CONCEDED], inverted: true },
+        saves:         { label: 'Arrêts',              label_en: 'Saves',                get: p => p.stats[C.SAVES] },
+        xg_prevented:  { label: 'xG évités',           label_en: 'xG prevented',         get: p => p.stats[C.XG_PREVENTED] },
+        save_pct:      { label: '% arrêts',            label_en: 'Save %',               get: p => p.stats[C.SAVE_PCT] },
         // Defensive
-        clearances:    { label: 'Dégagements',        get: p => p.stats[C.CLEARANCES] },
-        blocks:        { label: 'Blocks',             get: p => p.stats[C.BLOCKS] },
-        interceptions: { label: 'Interceptions',      get: p => p.stats[C.INTERCEPTIONS] },
-        tackles:       { label: 'Tackles',            get: p => p.stats[C.TACKLES] },
-        def_tackles:   { label: 'Tcl décisifs',       get: p => p.stats[C.DEF_TACKLES] },
+        clearances:    { label: 'Dégagements',         label_en: 'Clearances',           get: p => p.stats[C.CLEARANCES] },
+        blocks:        { label: 'Blocks',              label_en: 'Blocks',               get: p => p.stats[C.BLOCKS] },
+        interceptions: { label: 'Interceptions',       label_en: 'Interceptions',        get: p => p.stats[C.INTERCEPTIONS] },
+        tackles:       { label: 'Tackles',             label_en: 'Tackles',              get: p => p.stats[C.TACKLES] },
+        def_tackles:   { label: 'Tcl décisifs',        label_en: 'Key tackles',          get: p => p.stats[C.DEF_TACKLES] },
         // Recovery / Loss
-        poss_recov:    { label: 'Poss récup.',        get: p => p.stats[C.POSS_RECOV] },
-        poss_lost:     { label: 'Poss perdues (inv.)', get: p => p.stats[C.POSS_LOST], inverted: true },
+        poss_recov:    { label: 'Poss récup.',         label_en: 'Poss recov.',          get: p => p.stats[C.POSS_RECOV] },
+        poss_lost:     { label: 'Poss perdues (inv.)', label_en: 'Poss lost (inv.)',     get: p => p.stats[C.POSS_LOST], inverted: true },
         // Pressing
-        press_total:   { label: 'Pressing tenté',     get: p => p.stats[C.PRESS_T] },
-        pressing:      { label: 'Pressing réussi',    get: p => p.stats[C.PRESSING] },
+        press_total:   { label: 'Pressing tenté',      label_en: 'Pressing att.',        get: p => p.stats[C.PRESS_T] },
+        pressing:      { label: 'Pressing réussi',     label_en: 'Pressing succ.',       get: p => p.stats[C.PRESSING] },
         // Aerial
-        aerial:        { label: 'Aériens tentés',     get: p => p.stats[C.AERIAL] },
-        aerial_won:    { label: 'Aériens gagnés',     get: p => p.stats[C.AERIAL_WON] },
+        aerial:        { label: 'Aériens tentés',      label_en: 'Aerial att.',          get: p => p.stats[C.AERIAL] },
+        aerial_won:    { label: 'Aériens gagnés',      label_en: 'Aerial won',           get: p => p.stats[C.AERIAL_WON] },
         // Passing
-        passes_total:  { label: 'Passes tentées',     get: p => p.stats[C.PASSES_TOTAL] },
-        passes_succ:   { label: 'Passes réussies',    get: p => p.stats[C.PASSES_SUCC] },
-        pass_pct:      { label: '% passes',           get: p => p.stats[C.PASS_PCT] },
-        passes_prog:   { label: 'Passes prog.',       get: p => p.stats[C.PASSES_PROG] },
+        passes_total:  { label: 'Passes tentées',      label_en: 'Passes att.',          get: p => p.stats[C.PASSES_TOTAL] },
+        passes_succ:   { label: 'Passes réussies',     label_en: 'Passes succ.',         get: p => p.stats[C.PASSES_SUCC] },
+        pass_pct:      { label: '% passes',            label_en: 'Pass %',               get: p => p.stats[C.PASS_PCT] },
+        passes_prog:   { label: 'Passes prog.',        label_en: 'Prog. passes',         get: p => p.stats[C.PASSES_PROG] },
         // Creativity
-        key_passes:    { label: 'Passes clés',        get: p => p.stats[C.KEY_PASSES] },
-        xa:            { label: 'xA (PdA)',           get: p => p.stats[C.XA] },
-        chances:       { label: 'Occasions créées',   get: p => p.stats[C.CHANCES] },
+        key_passes:    { label: 'Passes clés',         label_en: 'Key passes',           get: p => p.stats[C.KEY_PASSES] },
+        xa:            { label: 'xA (PdA)',            label_en: 'xA',                   get: p => p.stats[C.XA] },
+        chances:       { label: 'Occasions créées',    label_en: 'Chances created',      get: p => p.stats[C.CHANCES] },
         // Crossing
-        crosses:       { label: 'Centres tent.',      get: p => p.stats[C.CROSSES_ATT] },
-        crosses_won:   { label: 'Centres réussis',    get: p => p.stats[C.CROSSES_WON] },
+        crosses:       { label: 'Centres tent.',       label_en: 'Crosses att.',         get: p => p.stats[C.CROSSES_ATT] },
+        crosses_won:   { label: 'Centres réussis',     label_en: 'Crosses succ.',        get: p => p.stats[C.CROSSES_WON] },
         // Dribble
-        dribbles:      { label: 'Dribbles',           get: p => p.stats[C.DRIBBLES] },
+        dribbles:      { label: 'Dribbles',            label_en: 'Dribbles',             get: p => p.stats[C.DRIBBLES] },
         // Shooting
-        shots:         { label: 'Tirs',               get: p => p.stats[C.SHOTS] },
-        shots_ot_pct:  { label: '% cadrés',           get: p => p.stats[C.SHOTS_OT_PCT] },
-        xg:            { label: 'xG',                 get: p => p.stats[C.XG_NP] },
-        goals_p90:     { label: 'Buts /90',            get: p => p.stats[C.GOALS_P90] },
+        shots:         { label: 'Tirs',                label_en: 'Shots',                get: p => p.stats[C.SHOTS] },
+        shots_ot_pct:  { label: '% cadrés',            label_en: 'On target %',          get: p => p.stats[C.SHOTS_OT_PCT] },
+        xg:            { label: 'xG',                  label_en: 'xG',                   get: p => p.stats[C.XG_NP] },
+        goals_p90:     { label: 'Buts /90',            label_en: 'Goals /90',            get: p => p.stats[C.GOALS_P90] },
         // Physical
-        distance:      { label: 'Distance',           get: p => p.stats[C.DISTANCE] },
-        sprints:       { label: 'Sprints',            get: p => p.stats[C.SPRINTS] },
+        distance:      { label: 'Distance',            label_en: 'Distance',             get: p => p.stats[C.DISTANCE] },
+        sprints:       { label: 'Sprints',             label_en: 'Sprints',              get: p => p.stats[C.SPRINTS] },
         // General
-        fm_rating:     { label: 'Note FM',            get: p => p.stats[C.FM_RATING] },
+        fm_rating:     { label: 'Note FM',             label_en: 'FM Rating',            get: p => p.stats[C.FM_RATING] },
     };
+    function statLabel(key) { const s = STAT_CATALOG[key]; return s ? (currentLang === 'en' && s.label_en ? s.label_en : s.label) : key; }
 
     // Compat shims for rest of code
     const STAT_GETTERS = {};
@@ -503,51 +762,52 @@
 
     // ── Profile defaults (immutable reference) ──
     const DEFAULT_PROFILES = {
-        GK: { label: 'Gardien', icon: 'fa-mitten', weights: [
+        GK: { label: 'Gardien', label_en: 'Goalkeeper', icon: 'fa-mitten', weights: [
             { key: 'fm_rating', w: 20 },
             { key: 'xg_prevented', w: 25 }, { key: 'save_pct', w: 20 }, { key: 'saves', w: 15 },
             { key: 'goals_conceded', w: 10 }, { key: 'poss_recov', w: 10 },
         ]},
-        CB: { label: 'Déf. Central', icon: 'fa-shield-halved', weights: [
+        CB: { label: 'Déf. Central', label_en: 'Centre-back', icon: 'fa-shield-halved', weights: [
             { key: 'fm_rating', w: 20 },
-            { key: 'interceptions', w: 10 }, { key: 'blocks', w: 10 }, { key: 'clearances', w: 10 }, 
-            { key: 'def_tackles', w: 15 }, { key: 'aerial_won', w: 25 }, { key: 'poss_recov', w: 10 }, 
+            { key: 'interceptions', w: 10 }, { key: 'blocks', w: 10 }, { key: 'clearances', w: 10 },
+            { key: 'def_tackles', w: 15 }, { key: 'aerial_won', w: 25 }, { key: 'poss_recov', w: 10 },
         ]},
-        FB: { label: 'Latéral', icon: 'fa-arrows-left-right', weights: [
+        FB: { label: 'Latéral', label_en: 'Full-back', icon: 'fa-arrows-left-right', weights: [
             { key: 'fm_rating', w: 20 },
             { key: 'tackles', w: 15 }, { key: 'interceptions', w: 15 },
             { key: 'distance', w: 15 }, { key: 'sprints', w: 10 }, { key: 'dribbles', w: 10 },
-            { key: 'poss_recov', w: 15 }, 
+            { key: 'poss_recov', w: 15 },
         ]},
-        DM: { label: 'Mil. Défensif', icon: 'fa-helmet-safety', weights: [
+        DM: { label: 'Mil. Défensif', label_en: 'Def. Mid.', icon: 'fa-helmet-safety', weights: [
             { key: 'fm_rating', w: 20 },
             { key: 'pass_pct', w: 15 },
             { key: 'interceptions', w: 15 }, { key: 'poss_recov', w: 20 }, { key: 'tackles', w: 10 },
             { key: 'pressing', w: 10 }, { key: 'distance', w: 10 },
         ]},
-        CM: { label: 'Milieu', icon: 'fa-circle-dot', weights: [
+        CM: { label: 'Milieu', label_en: 'Midfielder', icon: 'fa-circle-dot', weights: [
             { key: 'fm_rating', w: 20 },
             { key: 'pressing', w: 15 }, { key: 'poss_recov', w: 15 }, { key: 'distance', w: 10 },
             { key: 'passes_prog', w: 15 }, { key: 'pass_pct', w: 15 }, { key: 'key_passes', w: 10 },
         ]},
-        AM: { label: 'Meneur', icon: 'fa-wand-magic-sparkles', weights: [
+        AM: { label: 'Meneur', label_en: 'Att. Mid.', icon: 'fa-wand-magic-sparkles', weights: [
             { key: 'fm_rating', w: 20 },
             { key: 'passes_prog', w: 15 }, { key: 'pass_pct', w: 15 }, { key: 'key_passes', w: 15 },
             { key: 'xa', w: 15 }, { key: 'xg', w: 10 }, { key: 'dribbles', w: 10 },
         ]},
-        WG: { label: 'Ailier', icon: 'fa-bolt', weights: [
+        WG: { label: 'Ailier', label_en: 'Winger', icon: 'fa-bolt', weights: [
             { key: 'fm_rating', w: 20 },
             { key: 'key_passes', w: 15 }, { key: 'xa', w: 15 }, { key: 'dribbles', w: 20 },
             { key: 'sprints', w: 10 }, { key: 'goals_p90', w: 10 },
             { key: 'crosses', w: 10 },
         ]},
-        ST: { label: 'Buteur', icon: 'fa-crosshairs', weights: [
+        ST: { label: 'Buteur', label_en: 'Striker', icon: 'fa-crosshairs', weights: [
             { key: 'fm_rating', w: 20 },
             { key: 'goals_p90', w: 25 }, { key: 'xg', w: 10 }, { key: 'shots_ot_pct', w: 10 },
             { key: 'xa', w: 10 }, { key: 'sprints', w: 15 }, { key: 'dribbles', w: 10 },
-            
+
         ]},
     };
+    function profileLabel(key) { const p = DEFAULT_PROFILES[key]; return p ? (currentLang === 'en' && p.label_en ? p.label_en : p.label) : key; }
 
     // ── Style variants per profile ──
     const PROFILE_STYLES = {
@@ -591,6 +851,18 @@
         },
     };
 
+    // ── Style name translations ──
+    const STYLE_NAMES_EN = {
+        'Complet': 'Complete', 'Ligne': 'Shot-stopper', 'Relanceur': 'Playmaker',
+        'Libéro': 'Sweeper', 'Stoppeur': 'Stopper', 'Excentré': 'Wide',
+        'Défensif': 'Defensive', 'Offensif': 'Offensive', 'Intérieur': 'Inverted',
+        'Sentinelle': 'Sentinel', 'Meneur': 'Playmaker',
+        'Organisateur': 'Organizer', 'Box-to-Box': 'Box-to-Box', 'Récupérateur': 'Ball-winner',
+        'Créateur': 'Creator', 'Attaquant': 'Attacker',
+        'Dribbleur': 'Dribbler', 'Finisseur': 'Finisher', 'Pivot': 'Target Man',
+    };
+    function styleName(name) { return currentLang === 'en' ? (STYLE_NAMES_EN[name] || name) : name; }
+
     // Active profiles (mutable, loaded from localStorage or defaults)
     let PROFILES = {};
     const PROFILE_ORDER = ['GK','CB','FB','DM','CM','AM','WG','ST'];
@@ -598,7 +870,7 @@
     function cloneProfiles(src) {
         const out = {};
         for (const [k, v] of Object.entries(src))
-            out[k] = { label: v.label, icon: v.icon, weights: v.weights.map(w => ({...w, label: STAT_CATALOG[w.key]?.label || w.key})) };
+            out[k] = { label: v.label, label_en: v.label_en, icon: v.icon, weights: v.weights.map(w => ({...w})) };
         return out;
     }
 
@@ -610,13 +882,13 @@
                 PROFILES = {};
                 for (const pk of PROFILE_ORDER) {
                     const def = DEFAULT_PROFILES[pk];
-                    PROFILES[pk] = { label: def.label, icon: def.icon, weights: [] };
+                    PROFILES[pk] = { label: def.label, label_en: def.label_en, icon: def.icon, weights: [] };
                     if (parsed[pk]) {
                         PROFILES[pk].weights = parsed[pk]
                             .filter(w => w.key in STAT_CATALOG)
-                            .map(w => ({...w, label: STAT_CATALOG[w.key]?.label || w.key}));
+                            .map(w => ({...w}));
                     } else {
-                        PROFILES[pk].weights = def.weights.map(w => ({...w, label: STAT_CATALOG[w.key]?.label || w.key}));
+                        PROFILES[pk].weights = def.weights.map(w => ({...w}));
                     }
                 }
                 for (const pk of PROFILE_ORDER) currentStyles[pk] = currentStyles[pk] || 'Complet';
@@ -638,7 +910,7 @@
         if (style === 'Complet') return PROFILES[profKey].weights;
         const styleWeights = PROFILE_STYLES[profKey]?.[style];
         if (!styleWeights) return PROFILES[profKey].weights;
-        return styleWeights.map(w => ({ ...w, label: STAT_CATALOG[w.key]?.label || w.key }));
+        return styleWeights.map(w => ({ ...w }));
     }
 
     // Score a single player for arbitrary weights, using cached refPool
@@ -699,11 +971,15 @@
     function parseSalary(s) {
         if (!s || s === 'N/A') return { avg: 0, max: 0 };
         const amounts = [];
-        const re = /([\d]+(?:,\d+)?)\s*(M|K)?\s*€/gi;
+        // FR: "2,22M € - 2,66M € p/m"  EN: "£67.5K - £109K p/m"
+        const re = /[€£$]\s*([\d]+(?:[.,]\d+)?)\s*(M|K)?|([\d]+(?:[.,]\d+)?)\s*(M|K)\s*[€£$]?/gi;
         let m;
         while ((m = re.exec(s)) !== null) {
-            let val = parseFloat(m[1].replace(',', '.'));
-            const u = (m[2] || '').toUpperCase();
+            const raw = m[1] || m[3];
+            if (!raw) continue;
+            let val = parseFloat(raw.replace(',', '.'));
+            if (isNaN(val)) continue;
+            const u = (m[2] || m[4] || '').toUpperCase();
             if (u === 'M') val *= 1000000;
             else if (u === 'K') val *= 1000;
             amounts.push(val);
@@ -738,30 +1014,32 @@
         return result;
     }
 
+    function hasSide(sides) { return sides.includes('D') || sides.includes('G') || sides.includes('R') || sides.includes('L'); }
+
     function getProfiles(posStr) {
         const groups = parsePositionString(posStr);
         const profiles = new Set();
         for (const { codes, sides } of groups) {
             for (const code of codes) {
-                if (code === 'GB') { profiles.add('GK'); continue; }
+                if (code === 'GB' || code === 'GK') { profiles.add('GK'); continue; }
                 if (code === 'D') {
                     if (sides.includes('C')) profiles.add('CB');
-                    if (sides.includes('D') || sides.includes('G')) profiles.add('FB');
+                    if (hasSide(sides)) profiles.add('FB');
                     continue;
                 }
-                if (code === 'AL') { profiles.add('FB'); continue; }
-                if (code === 'MD') { profiles.add('DM'); profiles.add('CM'); continue; }
+                if (code === 'AL' || code === 'WB') { profiles.add('FB'); continue; }
+                if (code === 'MD' || code === 'DM') { profiles.add('DM'); profiles.add('CM'); continue; }
                 if (code === 'M') {
                     if (sides.includes('C')) profiles.add('CM');
-                    if (sides.includes('D') || sides.includes('G')) profiles.add('WG');
+                    if (hasSide(sides)) profiles.add('WG');
                     continue;
                 }
-                if (code === 'MO') {
+                if (code === 'MO' || code === 'AM') {
                     if (sides.includes('C')) profiles.add('AM');
-                    if (sides.includes('D') || sides.includes('G')) profiles.add('WG');
+                    if (hasSide(sides)) profiles.add('WG');
                     continue;
                 }
-                if (code === 'BT') { profiles.add('ST'); continue; }
+                if (code === 'BT' || code === 'ST') { profiles.add('ST'); continue; }
             }
         }
         return [...profiles];
@@ -770,14 +1048,14 @@
     // ── CSV Parsing ──
     function loadCSV(file) {
         const uploadZone = document.getElementById('uploadZone');
-        uploadZone.innerHTML = '<i class="fas fa-spinner fa-spin"></i><p>Chargement en cours...</p>';
+        uploadZone.innerHTML = `<i class="fas fa-spinner fa-spin"></i><p>${t('loading')}</p>`;
 
         Papa.parse(file, {
             header: false,
             skipEmptyLines: true,
             complete: function(results) {
                 const rows = results.data;
-                if (rows.length < 2) { alert('Fichier vide ou invalide'); return; }
+                if (rows.length < 2) { alert(t('alert_empty_file')); return; }
 
                 // Skip header row (index 0)
                 const players = [];
@@ -828,7 +1106,7 @@
                 initDashboard();
             },
             error: function(err) {
-                alert('Erreur de parsing: ' + err.message);
+                alert(t('alert_parse_error') + err.message);
             }
         });
     }
@@ -1216,7 +1494,7 @@
         const uploadZone = document.getElementById('uploadZone');
         uploadZone.classList.add('loaded');
         uploadZone.innerHTML = `<i class="fas fa-check-circle" style="color:var(--score-excellent)"></i>
-            <p><strong>${allPlayers.length}</strong> joueurs chargés</p>`;
+            <p><strong>${allPlayers.length}</strong> ${t('players_loaded')}</p>`;
 
         document.getElementById('dashboard').classList.remove('hidden');
         populateFilters();
@@ -1257,7 +1535,7 @@
     function exportShortlistCSV() {
         const players = allPlayers.filter(p => shortlist.has(p.idx));
         if (players.length === 0) return;
-        const headers = ['Unique ID','Joueur','Âge','Club','Division','Position','Minutes','Salaire','Meilleure Note','Meilleur Profil'];
+        const headers = [t('export_uid'),t('export_player'),t('export_age'),t('export_club'),t('export_division'),t('export_position'),t('export_minutes'),t('export_salary'),t('export_best_score'),t('export_best_profile')];
         const rows = players.map(p => [
             p.uid, p.name, p.age, p.club, p.division, p.position, p.minutes,
             p.salary, p.bestScore || '', p.bestProfile || ''
@@ -1273,17 +1551,17 @@
 
     function renderProfileTabs() {
         const container = document.getElementById('profileTabs');
-        let html = `<div class="profile-tab active" data-profile="ALL">Tous</div>`;
+        let html = `<div class="profile-tab${currentProfile === 'ALL' ? ' active' : ''}" data-profile="ALL">${t('tab_all')}</div>`;
         for (const key of PROFILE_ORDER) {
             const p = PROFILES[key];
-            html += `<div class="profile-tab" data-profile="${key}"><i class="fas ${p.icon}"></i> ${key}</div>`;
+            html += `<div class="profile-tab${currentProfile === key ? ' active' : ''}" data-profile="${key}"><i class="fas ${p.icon}"></i> ${key}</div>`;
         }
-        html += `<div class="profile-tab" data-profile="SHORTLIST"><i class="fas fa-star"></i> Shortlist <span class="count" id="shortlistCount">${shortlist.size}</span></div>`;
-        html += `<div class="profile-tab" data-profile="LEAGUES"><i class="fas fa-ranking-star"></i> Ligues</div>`;
+        html += `<div class="profile-tab${currentProfile === 'SHORTLIST' ? ' active' : ''}" data-profile="SHORTLIST"><i class="fas fa-star"></i> ${t('tab_shortlist')} <span class="count" id="shortlistCount">${shortlist.size}</span></div>`;
+        html += `<div class="profile-tab${currentProfile === 'LEAGUES' ? ' active' : ''}" data-profile="LEAGUES"><i class="fas fa-ranking-star"></i> ${t('tab_leagues')}</div>`;
         container.innerHTML = html;
         container.querySelectorAll('.profile-tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                container.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+                container.querySelectorAll('.profile-tab').forEach(el => el.classList.remove('active'));
                 tab.classList.add('active');
                 currentProfile = tab.dataset.profile;
                 currentPage = 0;
@@ -1307,9 +1585,9 @@
         const styles = PROFILE_STYLES[currentProfile];
         const active = currentStyles[currentProfile] || 'Complet';
         let html = '<div class="style-tabs">';
-        html += `<div class="style-tab${active === 'Complet' ? ' active' : ''}" data-style="Complet">Complet</div>`;
+        html += `<div class="style-tab${active === 'Complet' ? ' active' : ''}" data-style="Complet">${styleName('Complet')}</div>`;
         for (const name of Object.keys(styles)) {
-            html += `<div class="style-tab${active === name ? ' active' : ''}" data-style="${name}">${name}</div>`;
+            html += `<div class="style-tab${active === name ? ' active' : ''}" data-style="${name}">${styleName(name)}</div>`;
         }
         html += '</div>';
         container.innerHTML = html;
@@ -1341,11 +1619,11 @@
         if (nameQ) activeFilters.push(`"${nameQ}"`);
         if (club) activeFilters.push(club);
         if (division) activeFilters.push(division);
-        if (ageMin > 0 || ageMax < 99) activeFilters.push(`${ageMin || '?'}-${ageMax < 99 ? ageMax : '?'} ans`);
+        if (ageMin > 0 || ageMax < 99) activeFilters.push(`${ageMin || '?'}-${ageMax < 99 ? ageMax : '?'} ${t('years_suffix')}`);
         if (salaryMaxFilter > 0) activeFilters.push(`≤${salaryMaxFilter}K€`);
-        if (contractYearFilter > 0) activeFilters.push(`Contrat ≤${contractYearFilter}`);
-        if (leagueMin > 0) activeFilters.push(`Ligue ≥${leagueMin}`);
-        if (scoreMin > 0) activeFilters.push(`Note ≥${scoreMin}`);
+        if (contractYearFilter > 0) activeFilters.push(`${t('filter_hint_contract')}${contractYearFilter}`);
+        if (leagueMin > 0) activeFilters.push(`${t('filter_hint_league')}${leagueMin}`);
+        if (scoreMin > 0) activeFilters.push(`${t('filter_hint_score')}${scoreMin}`);
         const filtersInline = document.getElementById('filtersInline');
         if (filtersInline) filtersInline.textContent = activeFilters.length ? '— ' + activeFilters.join(', ') : '';
 
@@ -1420,23 +1698,23 @@
 
         // Inline summary (shown when collapsed)
         document.getElementById('summaryInline').textContent =
-            `— ${filteredPlayers.length} joueurs` + (topPlayer ? ` · ${topPlayer.name}` : '');
+            `— ${filteredPlayers.length} ${t('summary_inline_players')}` + (topPlayer ? ` · ${topPlayer.name}` : '');
 
         document.getElementById('summaryCards').innerHTML = `
             <div class="summary-card">
-                <div class="label"><i class="fas fa-users"></i> Joueurs affichés</div>
+                <div class="label"><i class="fas fa-users"></i> ${t('summary_players')}</div>
                 <div class="value accent">${filteredPlayers.length}</div>
             </div>
             <div class="summary-card">
-                <div class="label"><i class="fas fa-clock"></i> Âge moyen</div>
+                <div class="label"><i class="fas fa-clock"></i> ${t('summary_avg_age')}</div>
                 <div class="value">${avgAge}</div>
             </div>
             <div class="summary-card">
-                <div class="label"><i class="fas fa-star"></i> Meilleur joueur</div>
+                <div class="label"><i class="fas fa-star"></i> ${t('summary_best_player')}</div>
                 <div class="value" style="font-size:18px">${topPlayer ? topPlayer.name : '-'}</div>
             </div>
             <div class="summary-card">
-                <div class="label"><i class="fas fa-trophy"></i> Meilleure note</div>
+                <div class="label"><i class="fas fa-trophy"></i> ${t('summary_best_score')}</div>
                 <div class="value">${topPlayer ? scoreBadge((currentProfile !== 'ALL' && currentProfile !== 'SHORTLIST') ? topPlayer.scores[currentProfile]?.total : topPlayer.bestScore) + ' <small style="color:var(--text-secondary);font-size:12px">' + topLabel + '</small>' : '-'}</div>
             </div>
         `;
@@ -1458,19 +1736,19 @@
             cols.push({ key: '_star', label: '★', width: '36px', nosort: true });
         }
         if (isShortlist) {
-            cols.push({ key: 'uid', label: 'UID', width: '80px' });
+            cols.push({ key: 'uid', label: t('col_uid'), width: '80px' });
         }
         cols.push(
-            { key: 'name', label: 'Joueur', width: '180px' },
-            { key: 'age', label: 'Âge', width: '50px' },
-            { key: 'club', label: 'Club', width: '140px' },
-            { key: 'division', label: 'Division', width: '150px' },
-            { key: 'minutes', label: 'Min', width: '65px' },
+            { key: 'name', label: t('col_player'), width: '180px' },
+            { key: 'age', label: t('col_age'), width: '50px' },
+            { key: 'club', label: t('col_club'), width: '140px' },
+            { key: 'division', label: t('col_division'), width: '150px' },
+            { key: 'minutes', label: t('col_minutes'), width: '65px' },
         );
 
         if (currentProfile === 'ALL' || isShortlist) {
-            cols.push({ key: 'salary', label: 'Salaire', width: '130px' });
-            cols.push({ key: 'score', label: 'Meilleure', width: '80px' });
+            cols.push({ key: 'salary', label: t('col_salary'), width: '130px' });
+            cols.push({ key: 'score', label: t('col_best'), width: '80px' });
             for (const pk of PROFILE_ORDER) {
                 cols.push({ key: pk, label: pk, width: '55px' });
             }
@@ -1509,7 +1787,7 @@
 
         let bodyHTML = '';
         if (pageData.length === 0) {
-            bodyHTML = `<tr><td colspan="${cols.length}" style="text-align:center;padding:40px;color:var(--text-secondary)"><i class="fas fa-search" style="font-size:24px;margin-bottom:8px;display:block;opacity:.5"></i>Aucun joueur trouvé</td></tr>`;
+            bodyHTML = `<tr><td colspan="${cols.length}" style="text-align:center;padding:40px;color:var(--text-secondary)"><i class="fas fa-search" style="font-size:24px;margin-bottom:8px;display:block;opacity:.5"></i>${t('no_players')}</td></tr>`;
         }
         for (const p of pageData) {
             bodyHTML += `<tr data-idx="${p.idx}">`;
@@ -1517,10 +1795,10 @@
                 switch (col.key) {
                     case '_star':
                         const starActive = shortlist.has(p.idx) ? ' active' : '';
-                        bodyHTML += `<td><button class="shortlist-btn${starActive}" data-sl="${p.idx}" title="Shortlist"><i class="fa${shortlist.has(p.idx) ? 's' : 'r'} fa-star"></i></button></td>`;
+                        bodyHTML += `<td><button class="shortlist-btn${starActive}" data-sl="${p.idx}" title="${t('detail_shortlist')}"><i class="fa${shortlist.has(p.idx) ? 's' : 'r'} fa-star"></i></button></td>`;
                         break;
                     case '_remove':
-                        bodyHTML += `<td><button class="shortlist-remove" data-slrm="${p.idx}" title="Retirer"><i class="fas fa-times"></i></button></td>`;
+                        bodyHTML += `<td><button class="shortlist-remove" data-slrm="${p.idx}" title="${t('detail_remove')}"><i class="fas fa-times"></i></button></td>`;
                         break;
                     case 'uid':
                         bodyHTML += `<td style="font-size:11px;color:var(--text-secondary)">${escHTML(p.uid)}</td>`;
@@ -1536,7 +1814,7 @@
                         break;
                     case 'division':
                         const ls = getLeagueStrength(p.division, p.country);
-                        bodyHTML += `<td style="color:var(--text-secondary);font-size:12px">${escHTML(p.division)} <span class="league-str" title="Niveau ligue: ${ls}/20">${ls}</span></td>`;
+                        bodyHTML += `<td style="color:var(--text-secondary);font-size:12px">${escHTML(p.division)} <span class="league-str" title="${t('detail_league_title')}: ${ls}/20">${ls}</span></td>`;
                         break;
                     case 'minutes':
                         bodyHTML += `<td>${p.minutes}</td>`;
@@ -1604,13 +1882,13 @@
         const tbody = document.getElementById('tableBody');
 
         const cols = [
-            { key: 'rank', label: '#', width: '40px' },
-            { key: 'country', label: 'Pays', width: '120px' },
-            { key: 'division', label: 'Division', width: '220px' },
-            { key: 'strength', label: 'Score', width: '70px' },
-            { key: 'factor', label: 'Facteur', width: '80px' },
-            { key: 'players', label: 'Joueurs', width: '80px' },
-            { key: 'reputation', label: 'Réputation', width: '130px' },
+            { key: 'rank', label: t('league_rank'), width: '40px' },
+            { key: 'country', label: t('league_country'), width: '120px' },
+            { key: 'division', label: t('league_division'), width: '220px' },
+            { key: 'strength', label: t('league_score'), width: '70px' },
+            { key: 'factor', label: t('league_factor'), width: '80px' },
+            { key: 'players', label: t('league_players'), width: '80px' },
+            { key: 'reputation', label: t('league_reputation'), width: '130px' },
         ];
 
         // Header
@@ -1667,16 +1945,16 @@
 
         // No pagination for leagues
         document.getElementById('pagination').innerHTML =
-            `<span>${data.length} division${data.length > 1 ? 's' : ''}</span><span></span>`;
+            `<span>${data.length} ${data.length > 1 ? t('league_divisions_unit') : t('league_division_unit')}</span><span></span>`;
     }
 
     function renderPagination() {
         const totalPages = Math.ceil(filteredPlayers.length / PAGE_SIZE);
         const container = document.getElementById('pagination');
         const exportBtn = currentProfile === 'SHORTLIST' && shortlist.size > 0
-            ? `<button class="export-btn" id="exportShortlistBtn"><i class="fas fa-download"></i> Exporter CSV</button>` : '';
+            ? `<button class="export-btn" id="exportShortlistBtn"><i class="fas fa-download"></i> ${t('pagination_export')}</button>` : '';
         if (totalPages <= 1) {
-            container.innerHTML = `<span>${filteredPlayers.length} joueur${filteredPlayers.length > 1 ? 's' : ''}</span><span>${exportBtn}</span>`;
+            container.innerHTML = `<span>${filteredPlayers.length} ${filteredPlayers.length > 1 ? t('pagination_players') : t('pagination_player')}</span><span>${exportBtn}</span>`;
             const eb = document.getElementById('exportShortlistBtn');
             if (eb) eb.addEventListener('click', exportShortlistCSV);
             return;
@@ -1697,7 +1975,7 @@
         }
         btns += `<button ${currentPage >= totalPages - 1 ? 'disabled' : ''} data-page="${currentPage + 1}"><i class="fas fa-chevron-right"></i></button>`;
 
-        container.innerHTML = `<span>${start}–${end} sur ${filteredPlayers.length}</span><div style="display:flex;align-items:center;gap:12px">${exportBtn}<div class="pagination-buttons">${btns}</div></div>`;
+        container.innerHTML = `<span>${start}–${end} ${t('pagination_of')} ${filteredPlayers.length}</span><div style="display:flex;align-items:center;gap:12px">${exportBtn}<div class="pagination-buttons">${btns}</div></div>`;
 
         const eb = document.getElementById('exportShortlistBtn');
         if (eb) eb.addEventListener('click', exportShortlistCSV);
@@ -1716,7 +1994,8 @@
         const backdrop = document.getElementById('backdrop');
 
         document.getElementById('detailName').textContent = player.name;
-        document.getElementById('detailMeta').textContent = `${player.age} ans · ${player.club} · ${player.division}`;
+        document.getElementById('detailMeta').textContent = `${player.age} ${t('years_suffix')} · ${player.club} · ${player.division}`;
+        panel.dataset.playerIdx = player.idx;
 
         // Shortlist button in detail
         const slBtn = document.getElementById('detailShortlistBtn');
@@ -1740,12 +2019,12 @@
         const pLeagueStr = getLeagueStrength(player.division, player.country);
         const pLeagueFact = leagueFactor(player.division, player.country);
         document.getElementById('detailInfo').innerHTML = `
-            <div class="detail-info-item"><div class="info-label">Position</div><div class="info-value">${escHTML(player.position)}</div></div>
-            <div class="detail-info-item"><div class="info-label">Salaire</div><div class="info-value">${escHTML(player.salary)}</div></div>
-            <div class="detail-info-item"><div class="info-label">Contrat</div><div class="info-value">${escHTML(player.contractEnd)}</div></div>
-            <div class="detail-info-item"><div class="info-label">Minutes</div><div class="info-value">${player.minutes}</div></div>
-            <div class="detail-info-item"><div class="info-label">Note FM</div><div class="info-value">${player.stats[C.FM_RATING].toFixed(2)}</div></div>
-            <div class="detail-info-item"><div class="info-label">Niv. ligue</div><div class="info-value"><span class="league-str">${pLeagueStr}</span>/20 <small style="color:var(--text-secondary)">(×${pLeagueFact.toFixed(2)})</small></div></div>
+            <div class="detail-info-item"><div class="info-label">${t('detail_position')}</div><div class="info-value">${escHTML(player.position)}</div></div>
+            <div class="detail-info-item"><div class="info-label">${t('detail_salary')}</div><div class="info-value">${escHTML(player.salary)}</div></div>
+            <div class="detail-info-item"><div class="info-label">${t('detail_contract')}</div><div class="info-value">${escHTML(player.contractEnd)}</div></div>
+            <div class="detail-info-item"><div class="info-label">${t('detail_minutes')}</div><div class="info-value">${player.minutes}</div></div>
+            <div class="detail-info-item"><div class="info-label">${t('detail_fm_rating')}</div><div class="info-value">${player.stats[C.FM_RATING].toFixed(2)}</div></div>
+            <div class="detail-info-item"><div class="info-label">${t('detail_league_level')}</div><div class="info-value"><span class="league-str">${pLeagueStr}</span>/20 <small style="color:var(--text-secondary)">(×${pLeagueFact.toFixed(2)})</small></div></div>
         `;
 
         // Score cards — compute all style variants per profile
@@ -1761,7 +2040,7 @@
             const styles = PROFILE_STYLES[pk];
             if (styles) {
                 for (const [styleName, styleWeights] of Object.entries(styles)) {
-                    const ws = styleWeights.map(w => ({ ...w, label: STAT_CATALOG[w.key]?.label || w.key }));
+                    const ws = styleWeights.map(w => ({ ...w }));
                     const sc = scorePlayerForWeights(player, pk, ws);
                     if (sc) detailStyleScores[pk + '|' + styleName] = sc;
                 }
@@ -1787,8 +2066,8 @@
                 const sc = data.total;
                 const color = getScoreColorRaw(sc);
                 const active = (key === selKey) ? ' active' : '';
-                scoresHTML += `<div class="detail-score-card${active}" data-profile="${pk}" data-style="${sn}" title="${sn} (brut: ${data.raw})">
-                    <div class="profile-label">${sn === 'Complet' ? '●' : sn}</div>
+                scoresHTML += `<div class="detail-score-card${active}" data-profile="${pk}" data-style="${sn}" title="${styleName(sn)} (${currentLang === 'en' ? 'raw' : 'brut'}: ${data.raw})">
+                    <div class="profile-label">${sn === 'Complet' ? '●' : styleName(sn)}</div>
                     <div class="profile-score" style="color:${color}">${sc}</div>
                 </div>`;
             }
@@ -1868,12 +2147,12 @@
         if (!profDef || !scores) return;
 
         const activeWeights = getActiveWeights(profileKey);
-        const styleName = currentStyles[profileKey] || 'Complet';
-        const label = styleName === 'Complet' ? profDef.label : styleName;
+        const activeStyleName = currentStyles[profileKey] || 'Complet';
+        const label = activeStyleName === 'Complet' ? profileLabel(profileKey) : styleName(activeStyleName);
         document.getElementById('radarProfileLabel').textContent = profileKey + ' — ' + label;
 
         const topWeights = [...activeWeights].sort((a, b) => b.w - a.w).slice(0, 7);
-        const labels = topWeights.map(w => w.label);
+        const labels = topWeights.map(w => statLabel(w.key));
         const data = topWeights.map(w => scores.components[w.key] || 0);
         const color = getScoreColorRaw(scores.total);
 
@@ -1919,45 +2198,45 @@
     function renderDetailStats(player) {
         const statsMap = [
             // GK
-            ['Encaissé /90', player.stats[C.GOALS_CONCEDED]],
-            ['Arrêts /90', player.stats[C.SAVES]],
-            ['xG évités /90', player.stats[C.XG_PREVENTED]],
-            ['% arrêts', player.stats[C.SAVE_PCT]],
+            [t('stat_conceded_p90'), player.stats[C.GOALS_CONCEDED]],
+            [t('stat_saves_p90'), player.stats[C.SAVES]],
+            [t('stat_xg_prev_p90'), player.stats[C.XG_PREVENTED]],
+            [t('stat_save_pct'), player.stats[C.SAVE_PCT]],
             // Defensive
-            ['Dég /90', player.stats[C.CLEARANCES]],
-            ['Blocks /90', player.stats[C.BLOCKS]],
-            ['Int /90', player.stats[C.INTERCEPTIONS]],
-            ['Tackles /90', player.stats[C.TACKLES]],
-            ['Tcl décisifs /90', player.stats[C.DEF_TACKLES]],
+            [t('stat_clearances_p90'), player.stats[C.CLEARANCES]],
+            [t('stat_blocks_p90'), player.stats[C.BLOCKS]],
+            [t('stat_interceptions_p90'), player.stats[C.INTERCEPTIONS]],
+            [t('stat_tackles_p90'), player.stats[C.TACKLES]],
+            [t('stat_key_tackles_p90'), player.stats[C.DEF_TACKLES]],
             // Recovery
-            ['Poss récup /90', player.stats[C.POSS_RECOV]],
-            ['Poss perd /90', player.stats[C.POSS_LOST]],
+            [t('stat_poss_recov_p90'), player.stats[C.POSS_RECOV]],
+            [t('stat_poss_lost_p90'), player.stats[C.POSS_LOST]],
             // Pressing
-            ['Pressing tenté /90', player.stats[C.PRESS_T]],
-            ['Pressing réussi /90', player.stats[C.PRESSING]],
+            [t('stat_press_att_p90'), player.stats[C.PRESS_T]],
+            [t('stat_press_succ_p90'), player.stats[C.PRESSING]],
             // Aerial
-            ['Aériens tentés /90', player.stats[C.AERIAL]],
-            ['Aériens gagnés /90', player.stats[C.AERIAL_WON]],
+            [t('stat_aerial_att_p90'), player.stats[C.AERIAL]],
+            [t('stat_aerial_won_p90'), player.stats[C.AERIAL_WON]],
             // Passing
-            ['Passes tent. /90', player.stats[C.PASSES_TOTAL]],
-            ['Passes réussies /90', player.stats[C.PASSES_SUCC]],
-            ['% passes', player.stats[C.PASS_PCT]],
-            ['Passes prog /90', player.stats[C.PASSES_PROG]],
+            [t('stat_passes_att_p90'), player.stats[C.PASSES_TOTAL]],
+            [t('stat_passes_succ_p90'), player.stats[C.PASSES_SUCC]],
+            [t('stat_pass_pct'), player.stats[C.PASS_PCT]],
+            [t('stat_passes_prog_p90'), player.stats[C.PASSES_PROG]],
             // Creativity
-            ['Passes clés /90', player.stats[C.KEY_PASSES]],
-            ['xA (PdA) /90', player.stats[C.XA]],
-            ['Occasions créées /90', player.stats[C.CHANCES]],
+            [t('stat_key_passes_p90'), player.stats[C.KEY_PASSES]],
+            [t('stat_xa_p90'), player.stats[C.XA]],
+            [t('stat_chances_p90'), player.stats[C.CHANCES]],
             // Crossing
-            ['Centres tent. /90', player.stats[C.CROSSES_ATT]],
-            ['Centres réussis /90', player.stats[C.CROSSES_WON]],
+            [t('stat_crosses_att_p90'), player.stats[C.CROSSES_ATT]],
+            [t('stat_crosses_succ_p90'), player.stats[C.CROSSES_WON]],
             // Dribble / Shot / Physical
-            ['Dribbles /90', player.stats[C.DRIBBLES]],
-            ['Tirs /90', player.stats[C.SHOTS]],
-            ['% cadrés', player.stats[C.SHOTS_OT_PCT]],
-            ['xG /90', player.stats[C.XG_NP]],
-            ['Buts /90', player.stats[C.GOALS_P90]],
-            ['Distance /90', player.stats[C.DISTANCE]],
-            ['Sprints /90', player.stats[C.SPRINTS]],
+            [t('stat_dribbles_p90'), player.stats[C.DRIBBLES]],
+            [t('stat_shots_p90'), player.stats[C.SHOTS]],
+            [t('stat_shots_ot_pct'), player.stats[C.SHOTS_OT_PCT]],
+            [t('stat_xg_p90'), player.stats[C.XG_NP]],
+            [t('stat_goals_p90'), player.stats[C.GOALS_P90]],
+            [t('stat_distance_p90'), player.stats[C.DISTANCE]],
+            [t('stat_sprints_p90'), player.stats[C.SPRINTS]],
         ];
 
         let html = '';
@@ -2015,25 +2294,24 @@
 
         let html = '';
         weights.forEach((w, i) => {
-            const cat = STAT_CATALOG[w.key];
             const inv = INVERTED_STATS.has(w.key) ? ' <span class="stat-inv">INV</span>' : '';
             html += `<div class="modal-stat-row${w.w === 0 ? ' inactive' : ''}">
-                <span class="stat-label">${cat?.label || w.key}${inv}</span>
+                <span class="stat-label">${statLabel(w.key)}${inv}</span>
                 <input type="number" min="0" max="100" value="${w.w}" data-idx="${i}">
-                <button class="btn-danger" style="padding:2px 6px;font-size:11px;min-width:0" data-rm="${i}" title="Retirer">&times;</button>
+                <button class="btn-danger" style="padding:2px 6px;font-size:11px;min-width:0" data-rm="${i}" title="${t('settings_remove')}">&times;</button>
             </div>`;
         });
 
         const totalClass = total === 100 ? 'ok' : 'warn';
-        html += `<div class="modal-total ${totalClass}">Total : ${total} / 100${total !== 100 ? ' ⚠' : ' ✓'}</div>`;
+        html += `<div class="modal-total ${totalClass}">${t('settings_total')} : ${total} / 100${total !== 100 ? ' ⚠' : ' ✓'}</div>`;
 
         if (unusedStats.length > 0) {
             html += `<div class="modal-stat-add">
                 <select id="settingsAddStat">
-                    <option value="">+ Ajouter une stat...</option>
-                    ${unusedStats.map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('')}
+                    <option value="">${t('settings_add_stat')}</option>
+                    ${unusedStats.map(([k]) => `<option value="${k}">${statLabel(k)}</option>`).join('')}
                 </select>
-                <button id="settingsAddBtn">Ajouter</button>
+                <button id="settingsAddBtn">${t('settings_add_btn')}</button>
             </div>`;
         }
 
@@ -2074,7 +2352,7 @@
         for (const pk of PROFILE_ORDER) {
             PROFILES[pk].weights = settingsDraft[pk]
                 .filter(w => w.w > 0)
-                .map(w => ({ key: w.key, w: w.w, label: STAT_CATALOG[w.key]?.label || w.key }));
+                .map(w => ({ key: w.key, w: w.w }));
         }
         saveProfiles();
         closeSettings();
@@ -2125,6 +2403,45 @@
         });
     }
 
+    // ── Language Toggle ──
+    function applyStaticLang() {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            el.textContent = t(el.dataset.i18n);
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            el.placeholder = t(el.dataset.i18nPlaceholder);
+        });
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+            el.title = t(el.dataset.i18nTitle);
+        });
+        document.documentElement.lang = currentLang === 'en' ? 'en' : 'fr';
+    }
+
+    function setLang(lang) {
+        currentLang = lang;
+        localStorage.setItem('fm26-lang', lang);
+        document.getElementById('langToggle').textContent = lang.toUpperCase();
+        applyStaticLang();
+        // Update upload zone if data already loaded
+        const uploadZone = document.getElementById('uploadZone');
+        if (uploadZone.classList.contains('loaded')) {
+            uploadZone.innerHTML = `<i class="fas fa-check-circle" style="color:var(--score-excellent)"></i>
+                <p><strong>${allPlayers.length}</strong> ${t('players_loaded')}</p>`;
+        }
+        // Re-render dynamic content if data is loaded
+        if (allPlayers.length) {
+            renderProfileTabs();
+            renderStyleTabs();
+            applyFilters();
+        }
+        // Re-render detail panel if open
+        const detailPanel = document.getElementById('detailPanel');
+        if (detailPanel.classList.contains('open')) {
+            const pidx = parseInt(detailPanel.dataset.playerIdx);
+            if (!isNaN(pidx)) openDetail(allPlayers[pidx]);
+        }
+    }
+
     // ── Event Listeners ──
     document.addEventListener('DOMContentLoaded', () => {
         const uploadZone = document.getElementById('uploadZone');
@@ -2133,6 +2450,19 @@
         // Restore theme
         const saved = localStorage.getItem('fm26-theme');
         if (saved) setTheme(saved);
+
+        // Restore language
+        const savedLang = localStorage.getItem('fm26-lang');
+        if (savedLang && savedLang !== currentLang) {
+            currentLang = savedLang;
+        }
+        document.getElementById('langToggle').textContent = currentLang.toUpperCase();
+        applyStaticLang();
+
+        // Language toggle
+        document.getElementById('langToggle').addEventListener('click', () => {
+            setLang(currentLang === 'fr' ? 'en' : 'fr');
+        });
 
         // Theme toggle
         document.getElementById('themeToggle').addEventListener('click', () => {
@@ -2162,7 +2492,7 @@
             uploadZone.classList.remove('dragover');
             const file = e.dataTransfer.files[0];
             if (file && file.name.endsWith('.csv')) loadCSV(file);
-            else alert('Veuillez déposer un fichier .csv');
+            else alert(t('alert_csv_only'));
         });
         fileInput.addEventListener('change', e => {
             if (e.target.files[0]) loadCSV(e.target.files[0]);
